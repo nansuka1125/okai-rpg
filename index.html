@@ -3,96 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resonance in the Dark -Complete-</title>
+    <title>Resonance: Final Conflict</title>
     <style>
         :root {
-            --bg: #0a0a0e;
-            --panel: #16161d;
-            --owen: #9b59b6;
+            --bg: #08080a;
+            --panel: #121218;
+            --owen: #8e44ad;
             --cain: #f1c40f;
-            --hp-bar: #e74c3c;
-            --mp-bar: #3498db;
-            --text: #dcdde1;
+            --hp-ok: #27ae60;
+            --hp-warn: #e67e22;
+            --hp-danger: #c0392b;
+            --mp-color: #2980b9;
+            --text: #eceff1;
         }
         body {
-            background-color: var(--bg);
-            color: var(--text);
+            background-color: var(--bg); color: var(--text);
             font-family: 'Hiragino Mincho ProN', serif;
             margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh;
         }
         #game-container {
-            width: 480px; height: 720px; background: var(--panel);
-            border: 2px solid #333; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box;
-            box-shadow: 0 0 30px rgba(0,0,0,0.7);
+            width: 480px; height: 750px; background: var(--panel);
+            border: 2px solid #2c3e50; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box;
         }
-        .mission-area {
-            background: rgba(241, 196, 15, 0.1); border: 1px solid var(--cain);
-            padding: 12px; margin-bottom: 15px; text-align: center; color: var(--cain); font-weight: bold; font-size: 0.9rem;
-            box-shadow: inset 0 0 10px rgba(241, 196, 15, 0.2);
+        .header-mission {
+            background: rgba(192, 57, 43, 0.1); border: 1px solid var(--hp-danger);
+            padding: 10px; margin-bottom: 15px; text-align: center; color: #ff7675; font-weight: bold;
         }
-        .status-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        .char-card { background: #1f1f26; padding: 12px; border-radius: 4px; border: 1px solid #333; }
-        .label { font-size: 0.75rem; margin-bottom: 5px; display: flex; justify-content: space-between; }
-        .gauge-container { background: #000; height: 10px; border-radius: 5px; margin-bottom: 8px; overflow: hidden; border: 1px solid #444; }
-        .gauge-fill { height: 100%; transition: width 0.4s ease-in-out; }
+        .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .char-sheet { background: #1c1c24; padding: 12px; border-radius: 4px; border: 1px solid #333; }
+        .gauge-wrap { background: #000; height: 12px; border-radius: 6px; margin: 4px 0 10px 0; overflow: hidden; border: 1px solid #444; }
+        .gauge-bar { height: 100%; transition: width 0.5s ease, background-color 0.3s; }
         
         #log {
-            flex-grow: 1; background: #050505; border: 1px solid #222; padding: 15px;
+            flex-grow: 1; background: #000; border: 1px solid #222; padding: 15px;
             overflow-y: auto; font-size: 0.85rem; line-height: 1.8; margin-bottom: 15px;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
         }
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         button {
-            background: #25252b; color: white; border: 1px solid #444; padding: 12px 5px;
-            cursor: pointer; font-size: 0.8rem; border-radius: 4px; transition: 0.2s;
+            background: #2d3436; color: white; border: 1px solid #444; padding: 12px 5px;
+            cursor: pointer; font-size: 0.8rem; border-radius: 4px;
         }
-        button:hover:not(:disabled) { background: #35353f; border-color: var(--cain); }
-        button:disabled { opacity: 0.2; cursor: not-allowed; filter: grayscale(1); }
-        .item-count { font-size: 0.7rem; color: #888; }
+        button:hover:not(:disabled) { border-color: var(--cain); background: #3d4446; }
+        button:disabled { opacity: 0.15; cursor: not-allowed; }
         
-        .owen-text { color: var(--owen); font-weight: bold; }
-        .cain-text { color: var(--cain); font-weight: bold; }
-        .sys-text { color: #95a5a6; font-size: 0.8rem; border-left: 2px solid #444; padding-left: 8px; margin: 5px 0; }
-        .danger { color: #ff4757; font-weight: bold; background: rgba(255, 71, 87, 0.1); padding: 2px 5px; }
+        .owen-name { color: var(--owen); } .cain-name { color: var(--cain); }
+        .sys-log { color: #95a5a6; font-size: 0.8rem; font-style: italic; }
+        .boss-log { color: #ff7675; font-weight: bold; border-top: 1px solid #ff7675; margin-top: 5px; }
+        
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        .danger-blink { animation: blink 0.8s infinite; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <div class="mission-area" id="mission-display">
-        目的: 素材を10個集めて帰還せよ (0/10)
-    </div>
-
-    <div class="status-section">
-        <div class="char-card">
-            <div class="label"><span class="owen-text">オーエン</span></div>
-            <div class="label"><span>HP</span><span id="o-hp-val">80/80</span></div>
-            <div class="gauge-container"><div id="o-hp-bar" class="gauge-fill" style="background:var(--hp-bar); width:100%"></div></div>
-            <div class="label"><span>MP</span><span id="o-mp-val">120/120</span></div>
-            <div class="gauge-container"><div id="o-mp-bar" class="gauge-fill" style="background:var(--mp-bar); width:100%"></div></div>
-        </div>
-        <div class="char-card">
-            <div class="label"><span class="cain-text">カイン</span></div>
-            <div class="label"><span>HP</span><span id="c-hp-val">120/120</span></div>
-            <div class="gauge-container"><div id="c-hp-bar" class="gauge-fill" style="background:var(--hp-bar); width:100%"></div></div>
-            <div class="label"><span>MP</span><span id="c-mp-val">50/50</span></div>
-            <div class="gauge-container"><div id="c-mp-bar" class="gauge-fill" style="background:var(--mp-bar); width:100%"></div></div>
-        </div>
-    </div>
-
-    <div style="font-size: 0.75rem; margin-bottom: 10px; display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding-bottom: 5px;">
-        <span>拠点備蓄素材: <b id="mats-val" style="color:var(--cain)">0</b></span>
-        <span>現在の獲得量: <b id="session-mats-val" style="color:var(--owen)">0</b></span>
-    </div>
-
-    <div id="log"></div>
-
-    <div class="controls">
-        <button id="btn-safe" onclick="action('safe')">慎重に進む<br><span class="item-count">低リスク / 素材(小)</span></button>
-        <button id="btn-bold" onclick="action('bold')">大胆に進む<br><span class="item-count">高リスク / 素材(大)</span></button>
-        <button id="btn-eat" onclick="action('eat')">甘味を与える<br><span class="item-count">所持数: <span id="sweets-val">3</span></span></button>
-        <button id="btn-rest" onclick="action('rest')">宿屋に戻る<br><span class="item-count">素材 5 消費</span></button>
-    </div>
-</div>
-
-<script
+    <div class="header-mission"
