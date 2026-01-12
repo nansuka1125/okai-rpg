@@ -2,22 +2,32 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resonance RPG -Stable Edition-</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Resonance RPG -Final Stable-</title>
     <style>
-        :root { --bg: #0d0d0f; --card: #1a1a22; --owen: #9b59b6; --cain: #f1c40f; --hp: #e74c3c; --mp: #3498db; --text: #dcdde1; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 10px; font-size: 14px; }
-        .mission { border: 1px solid var(--hp); color: #ff7675; text-align: center; padding: 10px; margin-bottom: 10px; font-weight: bold; }
-        .char-card { background: var(--card); padding: 10px; border-radius: 5px; margin-bottom: 8px; border-left: 4px solid #444; }
-        .st-line { display: flex; justify-content: space-between; margin: 3px 0; font-size: 0.85rem; }
-        #log { background: #000; height: 220px; overflow-y: auto; padding: 10px; font-size: 0.8rem; line-height: 1.6; border: 1px solid #333; margin-bottom: 10px; }
-        .res-bar { font-size: 0.75rem; background: #222; padding: 8px; display: flex; justify-content: space-between; margin-bottom: 10px; border-radius: 4px; }
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        button { background: #2d3436; color: #fff; border: 1px solid #555; padding: 12px 5px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; height: 55px; }
-        button:disabled { opacity: 0.2; }
-        .sys { color: #888; font-style: italic; font-size: 0.75rem; }
-        .ev { color: #55efc4; }
-        .dmg { color: #ff7675; font-weight: bold; }
+        :root { --bg: #0d0d0f; --card: #1a1a22; --owen: #9b59b6; --cain: #f1c40f; --hp: #e74c3c; --text: #dcdde1; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 10px; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        .mission { border: 1px solid var(--hp); color: #ff7675; text-align: center; padding: 8px; margin-bottom: 8px; font-weight: bold; font-size: 14px; flex-shrink: 0; }
+        
+        .char-card { background: var(--card); padding: 8px; border-radius: 4px; margin-bottom: 6px; border-left: 4px solid #444; flex-shrink: 0; }
+        .st-line { display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; }
+        
+        .res-bar { font-size: 11px; background: #222; padding: 6px; display: flex; justify-content: space-around; margin-bottom: 8px; border-radius: 4px; flex-shrink: 0; }
+        
+        #log { background: #000; flex-grow: 1; overflow-y: auto; padding: 10px; font-size: 13px; line-height: 1.5; border: 1px solid #333; margin-bottom: 10px; border-radius: 4px; }
+        
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex-shrink: 0; padding-bottom: 10px; }
+        button { 
+            background: #34495e; color: #fff; border: 1px solid #555; padding: 10px 5px; border-radius: 6px; 
+            font-size: 13px; font-weight: bold; min-height: 50px; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        button:active { background: #2c3e50; transform: translateY(2px); }
+        .sub-t { font-size: 10px; opacity: 0.8; font-weight: normal; }
+        
+        .ev { color: #55efc4; } .dmg { color: #ff7675; font-weight: bold; } .sys { color: #888; font-size: 11px; }
     </style>
 </head>
 <body>
@@ -25,28 +35,26 @@
 <div class="mission" id="m-info">目的地まで: 10km</div>
 
 <div class="char-card" style="border-color: var(--owen);">
-    <div style="color:var(--owen); font-weight:bold;">オーエン</div>
-    <div class="st-line"><span>HP: <b id="o-h">80</b>/80</span> <span>MP: <b id="o-m">120</b>/120</span></div>
+    <div style="color:var(--owen);">オーエン</div>
+    <div class="st-line"><span>HP: <span id="o-h">80</span></span> <span>MP: <span id="o-m">120</span></span></div>
 </div>
 
 <div class="char-card" style="border-color: var(--cain);">
-    <div style="color:var(--cain); font-weight:bold;">カイン</div>
-    <div class="st-line"><span>HP: <b id="c-h">120</b>/120</span> <span>MP: <b id="c-m">50</b>/50</span></div>
+    <div style="color:var(--cain);">カイン</div>
+    <div class="st-line"><span>HP: <span id="c-h">120</span></span> <span>MP: <span id="c-m">50</span></span></div>
 </div>
 
 <div class="res-bar">
-    <span>備蓄: <b id="t-mat">0</b></span>
-    <span>戦利品: <b id="inv-c">0</b>個</span>
-    <span>甘味: <b id="sw">3</b></span>
+    <span>備蓄: <b id="t-mat">0</b></span> <span>戦利品: <b id="inv-c">0</b>個</span> <span>甘味: <b id="sw">3</b></span>
 </div>
 
 <div id="log"></div>
 
 <div class="controls">
-    <button onclick="cmd('safe')">慎重に進む<br>(素材・小)</button>
-    <button onclick="cmd('bold')">大胆に進む<br>(素材・大)</button>
-    <button onclick="cmd('eat')">甘味消費<br>(オーエン回復)</button>
-    <button onclick="cmd('inn')">宿屋に戻る<br>(精算/全快)</button>
+    <button onclick="cmd('safe')">慎重に進む<span class="sub-t">距離-1/素材小</span></button>
+    <button onclick="cmd('bold')">大胆に進む<span class="sub-t">距離-2/素材大</span></button>
+    <button onclick="cmd('eat')">甘味消費<span class="sub-t">オーエンMP回復</span></button>
+    <button onclick="cmd('inn')">宿屋に戻る<span class="sub-t">精算・全回復</span></button>
 </div>
 
 <script>
@@ -55,7 +63,10 @@
     
     function addLog(m, cl="") {
         const l = document.getElementById('log');
-        l.innerHTML += `<div class="${cl}">${m}</div>`;
+        const d = document.createElement('div');
+        if(cl) d.className = cl;
+        d.innerHTML = m;
+        l.appendChild(d);
         l.scrollTop = l.scrollHeight;
     }
 
@@ -83,52 +94,7 @@
             if(Math.random() < 0.3) {
                 const r = Math.random();
                 if(r < 0.3) {
-                    st.c.h -= 10; addLog("【イベント】カインがモテすぎて疲弊した。", "ev");
+                    st.c.h -= 15; addLog("【イベント】カインが民衆に囲まれ、もみくちゃにされた。", "ev");
                 } else if(r < 0.6) {
-                    st.o.m -= 15; addLog("【イベント】オーエンが退屈しのぎに魔法を乱射した。", "ev");
-                } else {
-                    st.o.m -= 5; addLog("【イベント】カインの鼻歌にオーエンが苛立ち、魔法で耳を塞いだ。", "ev");
+                    st.o.m -= 20; addLog("【イベント】オーエンが退屈に耐えかね、無意味な爆破魔法を放った。", "ev");
                 }
-            }
-
-            if(st.dist === 0 && !st.boss) {
-                st.boss = true;
-                addLog("前方に『厄災の核』が出現。消耗が激しいと全滅の恐れがある。", "dmg");
-            }
-
-            // 戦闘
-            if(Math.random() < (st.boss ? 1.0 : (isB ? 0.7 : 0.25))) {
-                const d = st.boss ? 80 : (isB ? 30 : 12);
-                st.c.h -= d;
-                addLog(`敵の攻撃。カインが盾となり衝撃を受けた。`, "dmg");
-
-                if(st.c.h <= 0) {
-                    addLog("カインが倒れた。オーエンが彼を担ぎ、戦利品を捨てて撤退した。", "dmg");
-                    st.inv = []; st.sw = 0; st.dist = 10; st.boss = false; st.c.h = 10;
-                } else if(st.boss) {
-                    addLog("死闘の末、ボスを撃破。貴重な素材を多数得た。");
-                    st.boss = false; st.dist = 15; 
-                    for(let i=0; i<5; i++) st.inv.push("ボスの心臓");
-                } else {
-                    const it = items[Math.floor(Math.random()*items.length)];
-                    st.inv.push(it);
-                    addLog(`魔物を排除。 [${it}] を入手。`, "sys");
-                }
-            }
-        } else if(type === 'eat') {
-            if(st.sw > 0) { st.sw--; st.o.m = st.o.mm; addLog("オーエンが菓子を咀嚼し、魔力が全快した。"); }
-        } else if(type === 'inn') {
-            if(st.inv.length > 0) {
-                addLog("【精算】" + st.inv.join(", "), "sys");
-                st.t += st.inv.length; st.inv = [];
-            }
-            st.o.h=st.o.mh; st.o.m=st.o.mm; st.c.h=st.c.mh; st.c.m=st.c.mm; st.sw=3; st.boss=false;
-            addLog("休息。カインは装備を磨き、オーエンは窓の外を眺めていた。");
-        }
-        update();
-    }
-    update();
-    addLog("二人の探索が始まった。");
-</script>
-</body>
-</html>
