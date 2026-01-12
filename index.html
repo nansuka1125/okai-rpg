@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Resonance RPG -Mobile Optimized-</title>
+    <title>Resonance RPG -Encounter & Items-</title>
     <style>
         :root { --bg: #0a0a0c; --owen: #a335ee; --cain: #f1c40f; --hp: #e74c3c; --panel: #1a1a20; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
@@ -15,23 +15,19 @@
             padding: 10px;
         }
         
-        /* 1. 上部：ミッション */
         .m-hdr { flex-shrink: 0; background: #000; border: 1px solid var(--cain); padding: 8px; border-radius: 4px; margin-bottom: 8px; text-align: center; }
         .m-idx { font-size: 13px; font-weight: bold; color: var(--cain); display: block; }
         .achieved { background: var(--cain) !important; color: #000 !important; }
 
-        /* 2. ステータス：極限までシンプルに */
         .st-bar { flex-shrink: 0; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; background: #111; padding: 6px; border-radius: 4px; }
         .c-lbl { font-size: 11px; font-weight: bold; color: var(--cain); }
         .bar-wrap { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
-        .bg-b { background: #222; height: 6px; border-radius: 3px; overflow: hidden; position: relative; }
+        .bg-b { background: #222; height: 6px; border-radius: 3px; overflow: hidden; }
         #h-fill { background: var(--hp); height: 100%; transition: width 0.3s; }
         #m-fill { background: #3498db; height: 100%; transition: width 0.3s; }
         
-        /* 3. 距離表示 */
         .d-ui { flex-shrink: 0; font-size: 11px; text-align: center; margin-bottom: 8px; color: #aaa; }
 
-        /* 4. ログ */
         #log { 
             flex-grow: 1; overflow-y: auto; background: #000; border: 1px solid #222; 
             border-radius: 4px; padding: 12px; font-size: 13px; line-height: 1.6; margin-bottom: 10px;
@@ -40,17 +36,16 @@
         .log-dmg { color: #ff7675; } 
         .log-sys { color: #888; font-size: 11px; margin-top: 4px; border-top: 1px solid #111; padding-top: 2px; }
 
-        /* 5. 下部：3つのメインボタン */
         .btns { flex-shrink: 0; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         button { 
             background: #252e38; color: #fff; border: 1px solid #444; padding: 10px 4px; 
             border-radius: 6px; font-size: 12px; font-weight: bold; min-height: 54px; cursor: pointer; 
         }
         button:active { background: #1a252f; border-color: var(--cain); }
+        button:disabled { opacity: 0.3; }
         #btn-boss { background: #633277; grid-column: span 3; display: none; margin-bottom: 8px; }
         #btn-inn { background: #2c3e50; border-color: var(--cain); grid-column: span 3; display: none; margin-bottom: 8px; }
 
-        /* 6. アイテムモーダル */
         #modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 100;
@@ -92,14 +87,14 @@
     <div id="modal" onclick="toggleModal(false)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3 style="color:var(--cain); margin-bottom:15px; border-bottom:1px solid var(--cain);">探索状況・所持品</h3>
-            <div class="m-row"><span>手荷物（銀貨）</span><span id="mdl-t">0</span></div>
-            <div class="m-row"><span>倉庫の蓄え</span><span id="mdl-g">0</span></div>
-            <div class="m-row"><span>甘味の残り</span><span id="mdl-sw">0</span></div>
-            <div class="m-row"><span>カインの撃破数</span><span id="mdl-k">0</span></div>
-            <div class="m-row"><span>オーエンの撃破数</span><span id="mdl-o">0</span></div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
-                <button onclick="act('eat')" style="min-height:40px; background:#4a3c28;">甘味を消費</button>
-                <button onclick="toggleModal(false)" style="min-height:40px;">閉じる</button>
+            <div class="m-row"><span>古い銀貨（手荷物）</span><span id="mdl-t">0</span></div>
+            <div class="m-row"><span>薬草</span><span id="mdl-hb">0</span></div>
+            <div class="m-row"><span>甘味</span><span id="mdl-sw">0</span></div>
+            <div class="m-row"><span>撃破数（C/O）</span><span><span id="mdl-k">0</span> / <span id="mdl-o">0</span></span></div>
+            <div style="display:grid; grid-template-columns: 1fr; gap:10px; margin-top:10px;">
+                <button onclick="act('use_hb')" style="min-height:40px; background:#2d5a27;">薬草を使用 (HP+30)</button>
+                <button onclick="act('eat')" style="min-height:40px; background:#4a3c28;">甘味を消費 (MP全快)</button>
+                <button onclick="toggleModal(false)" style="min-height:40px; background:#333;">閉じる</button>
             </div>
         </div>
     </div>
@@ -108,14 +103,14 @@
 window.onload = function() {
     let st = { 
         c_h: 120, c_mh: 120, c_m: 50, c_mm: 50, 
-        gInv: 0, tInv: 0, sw: 3, 
-        dist: 10, // 10=宿屋, 0=目的地
+        gInv: 0, tInv: 0, herb: 0, sw: 3, 
+        dist: 10, 
         kainKills: 0, owenKills: 0
     };
 
     window.toggleModal = (show) => {
         document.getElementById('mdl-t').innerText = st.tInv;
-        document.getElementById('mdl-g').innerText = st.gInv;
+        document.getElementById('mdl-hb').innerText = st.herb;
         document.getElementById('mdl-sw').innerText = st.sw;
         document.getElementById('mdl-k').innerText = st.kainKills;
         document.getElementById('mdl-o').innerText = st.owenKills;
@@ -125,16 +120,12 @@ window.onload = function() {
     function ui() {
         document.getElementById('h-fill').style.width = (st.c_h / st.c_mh * 100) + "%";
         document.getElementById('m-fill').style.width = (st.c_m / st.c_mm * 100) + "%";
-        
         const toInn = 10 - st.dist;
-        const toDest = st.dist;
-        document.getElementById('dist-ui').innerText = `宿屋まで: ${toInn}km / 目的地まで: ${toDest}km`;
-
+        document.getElementById('dist-ui').innerText = `宿屋まで: ${toInn}km / 目的地まで: ${st.dist}km`;
         document.getElementById('btn-boss').style.display = (st.dist === 0) ? "block" : "none";
         document.getElementById('btn-fwd').disabled = (st.dist === 0);
         document.getElementById('btn-bwd').style.display = (st.dist === 10) ? "none" : "block";
         document.getElementById('btn-inn').style.display = (st.dist === 10) ? "block" : "none";
-
         const ready = (st.gInv >= 3);
         document.getElementById('m-count').innerText = `進行状況: ${st.gInv} / 3 (${ready ? '報告可能' : '未達成'})`;
         document.getElementById('m-box').className = ready ? "m-hdr achieved" : "m-hdr";
@@ -152,50 +143,61 @@ window.onload = function() {
             const move = Math.random() > 0.5 ? 2 : 1;
             if(type === 'fwd') st.dist = Math.max(0, st.dist - move);
             else st.dist = Math.min(10, st.dist + move);
-            
-            add(type === 'fwd' ? `${move}km、深部へと潜り込んだ。` : `${move}km、宿屋への道を引き返した。`);
+            add(type === 'fwd' ? `${move}km、深部へと潜り込んだ。` : `${move}km、宿屋の方角へ戻る。`);
 
-            if(Math.random() < 0.45) {
+            // 1. エンカウント判定（必ず実行）
+            if(Math.random() < 0.40) {
                 const isOwen = Math.random() > 0.5;
                 if(isOwen) {
                     st.owenKills++;
-                    add("<span class='log-owen'>【オーエン】</span>気怠げに振られた指先から、紫の閃光が魔物を塵に変えた。", "log-owen");
+                    add("<span class='log-owen'>【オーエン】</span>気怠い挙動の末、紫の閃光が魔物を塵に変えた。", "log-owen");
                 } else {
                     st.kainKills++;
-                    add("カインの剣撃が魔物の核を的確に断ち割った。");
+                    add("カインの剣撃が魔物の核を断ち割った。");
                 }
 
+                // 2. ダメージ判定
                 if(Math.random() < 0.5) {
                     st.c_h -= 15;
                     add(`魔物の死に際の抵抗。カインが盾となり衝撃を殺した。`, "log-dmg");
                     if(st.c_h <= 0) {
-                        add("【敗走】カインの意識が途切れた。全てを失い、宿屋へ運び込まれた。", "log-dmg");
-                        st.dist = 10; st.tInv = 0; st.c_h = 10;
+                        add("【敗走】カインが倒れ、全てを失い宿屋へ運び込まれた。", "log-dmg");
+                        st.dist = 10; st.tInv = 0; st.herb = 0; st.c_h = 10;
+                    }
+                }
+
+                // 3. ドロップ判定（生存時のみ）
+                if(st.c_h > 10) {
+                    if(Math.random() < 0.50) {
+                        const roll = Math.random();
+                        if(roll < 0.4) { st.tInv++; add("[古い銀貨]を回収。", "log-sys"); }
+                        else if(roll < 0.8) { st.herb++; add("[薬草]を回収。", "log-sys"); }
+                        else { st.sw++; add("[甘味]を回収。", "log-sys"); }
                     } else {
-                        st.tInv++; add("[古い銀貨]を回収。", "log-sys");
+                        add("魔物は霧となって消えた。");
                     }
                 }
             }
-        } else if(type === 'boss') {
-            st.owenKills++;
-            add("<span class='log-owen'>【オーエン】</span>「……目障りだ」 紫の炎が深部の闇を焼き払い、静寂が戻った。", "log-owen");
-            st.dist = 2; 
-        } else if(type === 'eat') {
-            if(st.sw > 0) { 
-                st.sw--; st.c_m = st.c_mm; 
-                add("オーエンは菓子を咀嚼し、わずかに退屈を紛らわせた。");
+        } else if(type === 'use_hb') {
+            if(st.herb > 0) {
+                st.herb--;
+                st.c_h = Math.min(st.c_mh, st.c_h + 30);
+                add("薬草を煎じ、カインの傷を癒やした。 (HP+30)");
                 toggleModal(false);
             }
+        } else if(type === 'eat') {
+            if(st.sw > 0) { st.sw--; st.c_m = st.c_mm; add("オーエンは菓子を咀嚼し、魔力を蓄えた。"); toggleModal(false); }
         } else if(type === 'inn') {
             st.gInv += st.tInv;
             const total = st.kainKills + st.owenKills;
-            add(`【帰還】精算完了。今回の総撃破数: ${total} (カイン: ${st.kainKills} / オーエン: ${st.owenKills})`, "log-sys");
+            add(`【帰還】精算。総撃破数: ${total} (C:${st.kainKills} / O:${st.owenKills})`, "log-sys");
             st.tInv = 0; st.c_h=st.c_mh; st.c_m=st.c_mm; st.sw=3;
             st.kainKills = 0; st.owenKills = 0;
         }
         ui();
     };
     ui();
+    add("宿屋の主人：『銀貨を3枚だ。生きて帰れたら受け取ってやる』", "log-sys");
 };
 </script>
 </body>
