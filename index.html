@@ -85,4 +85,50 @@
                 if(r < 0.3) {
                     st.c.h -= 10; addLog("【イベント】カインがモテすぎて疲弊した。", "ev");
                 } else if(r < 0.6) {
-                    st.o.m -= 15; addLog("【イベント】
+                    st.o.m -= 15; addLog("【イベント】オーエンが退屈しのぎに魔法を乱射した。", "ev");
+                } else {
+                    st.o.m -= 5; addLog("【イベント】カインの鼻歌にオーエンが苛立ち、魔法で耳を塞いだ。", "ev");
+                }
+            }
+
+            if(st.dist === 0 && !st.boss) {
+                st.boss = true;
+                addLog("前方に『厄災の核』が出現。消耗が激しいと全滅の恐れがある。", "dmg");
+            }
+
+            // 戦闘
+            if(Math.random() < (st.boss ? 1.0 : (isB ? 0.7 : 0.25))) {
+                const d = st.boss ? 80 : (isB ? 30 : 12);
+                st.c.h -= d;
+                addLog(`敵の攻撃。カインが盾となり衝撃を受けた。`, "dmg");
+
+                if(st.c.h <= 0) {
+                    addLog("カインが倒れた。オーエンが彼を担ぎ、戦利品を捨てて撤退した。", "dmg");
+                    st.inv = []; st.sw = 0; st.dist = 10; st.boss = false; st.c.h = 10;
+                } else if(st.boss) {
+                    addLog("死闘の末、ボスを撃破。貴重な素材を多数得た。");
+                    st.boss = false; st.dist = 15; 
+                    for(let i=0; i<5; i++) st.inv.push("ボスの心臓");
+                } else {
+                    const it = items[Math.floor(Math.random()*items.length)];
+                    st.inv.push(it);
+                    addLog(`魔物を排除。 [${it}] を入手。`, "sys");
+                }
+            }
+        } else if(type === 'eat') {
+            if(st.sw > 0) { st.sw--; st.o.m = st.o.mm; addLog("オーエンが菓子を咀嚼し、魔力が全快した。"); }
+        } else if(type === 'inn') {
+            if(st.inv.length > 0) {
+                addLog("【精算】" + st.inv.join(", "), "sys");
+                st.t += st.inv.length; st.inv = [];
+            }
+            st.o.h=st.o.mh; st.o.m=st.o.mm; st.c.h=st.c.mh; st.c.m=st.c.mm; st.sw=3; st.boss=false;
+            addLog("休息。カインは装備を磨き、オーエンは窓の外を眺めていた。");
+        }
+        update();
+    }
+    update();
+    addLog("二人の探索が始まった。");
+</script>
+</body>
+</html>
