@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resonance RPG: Fixed Edition</title>
+    <title>Resonance in the Dark -Fixed-</title>
     <style>
         :root {
             --bg: #0a0a0c;
@@ -12,41 +12,43 @@
             --cain: #f1c40f;
             --hp-ok: #27ae60;
             --hp-danger: #c0392b;
+            --mp-bar: #2980b9;
             --text: #dcdde1;
         }
         body {
             background-color: var(--bg); color: var(--text);
             font-family: 'Hiragino Mincho ProN', serif;
-            margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh;
+            margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh;
         }
         #game-container {
             width: 480px; height: 750px; background: var(--panel);
             border: 2px solid #333; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
         }
         .header-mission {
             background: rgba(192, 57, 43, 0.1); border: 1px solid var(--hp-danger);
-            padding: 12px; margin-bottom: 15px; text-align: center; color: #ff7675; font-weight: bold;
+            padding: 12px; margin-bottom: 15px; text-align: center; color: #ff7675; font-weight: bold; font-size: 0.9rem;
         }
-        .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px; }
         .char-sheet { background: #1f1f26; padding: 12px; border-radius: 4px; border: 1px solid #444; }
-        .gauge-wrap { background: #000; height: 12px; border-radius: 6px; margin: 4px 0 10px 0; overflow: hidden; border: 1px solid #222; }
-        .gauge-bar { height: 100%; transition: width 0.3s ease; }
+        .gauge-wrap { background: #000; height: 10px; border-radius: 5px; margin: 4px 0 8px 0; overflow: hidden; border: 1px solid #222; position: relative; }
+        .gauge-bar { height: 100%; transition: width 0.4s ease; width: 100%; }
         
         #log {
-            flex-grow: 1; background: #000; border: 1px solid #222; padding: 15px;
+            flex-grow: 1; background: #050505; border: 1px solid #222; padding: 15px;
             overflow-y: auto; font-size: 0.85rem; line-height: 1.8; margin-bottom: 15px;
         }
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         button {
-            background: #25252b; color: white; border: 1px solid #555; padding: 12px 5px;
-            cursor: pointer; font-size: 0.8rem; border-radius: 4px;
+            background: #25252b; color: white; border: 1px solid #555; padding: 10px 5px;
+            cursor: pointer; font-size: 0.8rem; border-radius: 4px; transition: 0.2s; height: 50px;
         }
         button:hover:not(:disabled) { border-color: var(--cain); background: #35353f; }
-        button:disabled { opacity: 0.2; cursor: not-allowed; }
+        button:disabled { opacity: 0.1; cursor: not-allowed; }
         
         .owen-name { color: var(--owen); font-weight: bold; }
         .cain-name { color: var(--cain); font-weight: bold; }
-        .sys-log { color: #7f8c8d; font-size: 0.8rem; font-style: italic; border-left: 2px solid #444; padding-left: 8px; }
+        .sys-log { color: #7f8c8d; font-size: 0.8rem; font-style: italic; border-left: 2px solid #444; padding-left: 8px; margin: 5px 0; }
         .danger { color: #ff4757; font-weight: bold; }
     </style>
 </head>
@@ -59,5 +61,70 @@
         <div class="char-sheet">
             <div class="owen-name">オーエン</div>
             <div style="font-size:0.7rem">HP <span id="o-hp-txt">80/80</span></div>
-            <div class="gauge-wrap"><div id="o-hp-bar" class="gauge-bar" style="background:var(--hp-ok); width:100%"></div></div>
-            <div style="font-size:0.7rem">MP <span id="o-mp-txt">120/120</span>
+            <div class="gauge-wrap"><div id="o-hp-bar" class="gauge-bar" style="background:var(--hp-ok);"></div></div>
+            <div style="font-size:0.7rem">MP <span id="o-mp-txt">120/120</span></div>
+            <div class="gauge-wrap"><div id="o-mp-bar" class="gauge-bar" style="background:var(--mp-bar);"></div></div>
+        </div>
+        <div class="char-sheet">
+            <div class="cain-name">カイン</div>
+            <div style="font-size:0.7rem">HP <span id="c-hp-txt">120/120</span></div>
+            <div class="gauge-wrap"><div id="c-hp-bar" class="gauge-bar" style="background:var(--hp-ok);"></div></div>
+            <div style="font-size:0.7rem">MP <span id="c-mp-txt">50/50</span></div>
+            <div class="gauge-wrap"><div id="c-mp-bar" class="gauge-bar" style="background:var(--mp-bar);"></div></div>
+        </div>
+    </div>
+
+    <div style="font-size: 0.75rem; margin-bottom: 10px; display: flex; justify-content: space-between; padding: 0 5px;">
+        <span>拠点備蓄: <b id="total-mats">0</b></span>
+        <span>探索獲得: <b id="temp-mats">0</b></span>
+        <span>甘味: <b id="sweets">3</b></span>
+    </div>
+
+    <div id="log"></div>
+
+    <div class="controls">
+        <button id="btn-safe" onclick="playTurn('safe')">慎重に進む<br>距離-1 / MP(小)</button>
+        <button id="btn-bold" onclick="playTurn('bold')">大胆に進む<br>距離-2 / MP(大)</button>
+        <button id="btn-eat" onclick="playTurn('eat')">甘味を消費<br>オーエンMP全快</button>
+        <button id="btn-inn" onclick="playTurn('inn')">宿屋に戻る<br>素材5消費 / 全快</button>
+    </div>
+</div>
+
+<script>
+    // 状態管理
+    const game = {
+        o: { hp: 80, mhp: 80, mp: 120, mmp: 120 },
+        c: { hp: 120, mhp: 120, mp: 50, mmp: 50 },
+        totalMats: 0,
+        tempMats: 0,
+        sweets: 3,
+        distance: 10,
+        isBoss: false
+    };
+
+    const narrations = [
+        "オーエンが自身の金の右目を指先でなぞり、不気味に目を細めた。それはかつて、カインが失ったものだ。",
+        "深い霧の中、カインはオーエンの肩に触れ、その感触だけを頼りに歩を進めた。",
+        "宿の娘がカインに寄り添うのを、オーエンが魔術で椅子を引いて露骨に妨害し、不機嫌そうに鼻で笑った。",
+        "カインの左目に疼きが走る。視えないはずの景色の中に、オーエンの魔力の残滓が赤く浮かび上がった。"
+    ];
+
+    function writeLog(msg, cls="") {
+        const log = document.getElementById('log');
+        const d = document.createElement('div');
+        d.className = cls;
+        d.innerHTML = msg;
+        log.appendChild(d);
+        log.scrollTop = log.scrollHeight;
+    }
+
+    function refreshUI() {
+        // 数値反映
+        document.getElementById('o-hp-txt').innerText = `${game.o.hp}/${game.o.mhp}`;
+        document.getElementById('o-mp-txt').innerText = `${game.o.mp}/${game.o.mmp}`;
+        document.getElementById('c-hp-txt').innerText = `${game.c.hp}/${game.c.mhp}`;
+        document.getElementById('c-mp-txt').innerText = `${game.c.mp}/${game.c.mmp}`;
+        document.getElementById('total-mats').innerText = game.totalMats;
+        document.getElementById('temp-mats').innerText = game.tempMats;
+        document.getElementById('sweets').innerText = game.sweets;
+        document.getElementById('mission-info').innerText = game.isBoss ? "⚠ 厄災の核 と交戦中"
