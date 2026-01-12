@@ -3,193 +3,289 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Resonance RPG -Standard Layout-</title>
+    <title>因縁の旅路 - Fragment of Fate</title>
     <style>
-        :root { --bg: #0a0a0c; --panel: #1a1a20; --owen: #9b59b6; --cain: #f1c40f; --hp: #e74c3c; --text: #dcdde1; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        /* 画面全体をスマホの高さに固定 */
-        body { 
-            background: var(--bg); color: var(--text); font-family: serif; 
-            margin: 0; padding: 10px; display: flex; flex-direction: column; 
-            height: 100vh; overflow: hidden; /* スクロールを禁止して枠内に収める */
+        :root {
+            --bg-color: #0d0d0d;
+            --panel-bg: #1a1a1a;
+            --text-main: #e0e0e0;
+            --accent-gold: #ffcc00;
+            --accent-purple: #a335ee;
+            --accent-red: #ff4d4d;
         }
-        
-        /* ミッション：最上部 */
-        .mission-header { 
-            background: #000; border: 2px solid var(--cain); padding: 8px; 
-            border-radius: 4px; margin-bottom: 8px; text-align: center; flex-shrink: 0; 
-        }
-        #m-indicator { font-size: 14px; font-weight: bold; color: var(--cain); }
-        .m-status { font-size: 11px; margin-top: 2px; color: #fff; }
-        .achieved { background: var(--cain) !important; color: #000 !important; }
 
-        /* ステータスエリア */
-        .status-area { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; flex-shrink: 0; }
-        .owen-card { background: rgba(155, 89, 182, 0.1); border-left: 4px solid var(--owen); padding: 8px; border-radius: 4px; }
-        .cain-card { background: rgba(241, 196, 15, 0.1); border-left: 4px solid var(--cain); padding: 10px; border-radius: 4px; }
-        
-        .char-label { font-size: 11px; font-weight: bold; margin-bottom: 2px; display: block; }
-        .owen-narrative { font-size: 12px; font-style: italic; color: #bbb; }
-        .cain-stat-large { display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; }
-        
-        .dist-info { text-align: right; font-size: 11px; color: #ff7675; margin-top: 2px; }
-        .inv-bar { font-size: 10px; background: #222; padding: 5px; display: flex; justify-content: space-around; margin-bottom: 8px; border-radius: 4px; flex-shrink: 0; }
-        
-        /* ログ：ここだけが可変（伸び縮み）する */
-        #log { 
-            background: #000; flex-grow: 1; overflow-y: auto; padding: 10px; 
-            font-size: 13px; line-height: 1.5; border: 1px solid #333; 
-            margin-bottom: 10px; border-radius: 4px; 
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Hiragino Mincho ProN', 'serif';
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
         }
-        .log-ev { color: #55efc4; } .log-dmg { color: #ff7675; font-weight: bold; } .log-sys { color: #888; font-size: 11px; }
 
-        /* ボタン：最下部に固定 */
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex-shrink: 0; margin-bottom: 5px; }
-        button { 
-            background: #2c3e50; color: #fff; border: 1px solid #444; padding: 8px 4px; 
-            border-radius: 6px; font-size: 12px; font-weight: bold; min-height: 50px; cursor: pointer; 
+        /* 目的表示 */
+        #mission-panel {
+            border: 2px solid var(--accent-gold);
+            padding: 8px;
+            text-align: center;
+            margin-bottom: 10px;
+            background: rgba(255, 204, 0, 0.05);
         }
-        button:active { background: #1a252f; }
-        .sub { font-size: 9px; opacity: 0.7; display: block; font-weight: normal; }
+
+        #mission-title { color: var(--accent-gold); font-weight: bold; font-size: 0.9em; }
+        #mission-status { font-size: 0.8em; margin-top: 4px; }
+
+        /* カインスタテータス */
+        #status-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .status-box {
+            background: var(--panel-bg);
+            padding: 10px;
+            border-left: 4px solid var(--accent-gold);
+        }
+
+        .name { font-size: 1.1em; font-weight: bold; margin-bottom: 5px; color: var(--accent-gold); }
+        .bar-bg { background: #333; height: 8px; border-radius: 4px; overflow: hidden; }
+        .bar-fill { height: 100%; transition: width 0.3s; }
+        #hp-fill { background: var(--accent-red); }
+        #mp-fill { background: #3399ff; }
+        .val { font-size: 0.8em; text-align: right; margin-top: 2px; }
+
+        /* 資産表示 */
+        #assets {
+            display: flex;
+            justify-content: space-around;
+            background: #222;
+            padding: 5px;
+            font-size: 0.75em;
+            margin-bottom: 10px;
+        }
+
+        /* ログエリア - 高さを固定してスクロール */
+        #log {
+            flex-grow: 1;
+            background: #050505;
+            border: 1px solid #333;
+            padding: 10px;
+            font-size: 0.85em;
+            line-height: 1.6;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .msg { margin-bottom: 6px; border-bottom: 1px solid #1a1a1a; padding-bottom: 2px; }
+        .purple { color: var(--accent-purple); font-weight: bold; }
+        .red { color: var(--accent-red); }
+        .gold { color: var(--accent-gold); }
+        .system { color: #888; font-style: italic; }
+
+        /* 操作パネル - 画面下部に固定 */
+        #controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            padding-bottom: 10px;
+        }
+
+        button {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 12px 5px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: filter 0.2s;
+        }
+
+        button:active { filter: brightness(1.5); }
+        button:disabled { background: #1a1a1a; color: #555; cursor: not-allowed; }
+        .btn-sub { background: #34495e; }
+
+        /* ボス戦用特殊ボタン */
+        #boss-btn {
+            grid-column: 1 / 3;
+            background: var(--accent-red);
+            display: none;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-    <div class="mission-header" id="m-box">
-        <span id="m-indicator">目的確認中...</span>
-        <span class="m-status" id="m-detail">進行状況: --</span>
+    <div id="mission-panel">
+        <div id="mission-title">現在の目的：古い銀貨を3枚持ち帰れ</div>
+        <div id="mission-status">進行状況: 0 / 3 (未達成)</div>
     </div>
 
-    <div class="status-area">
-        <div class="owen-card">
-            <span class="char-label" style="color:var(--owen)">オーエン</span>
-            <div class="owen-narrative" id="o-state">不機嫌そうに爪を眺めている。</div>
+    <div id="status-container">
+        <div class="status-box">
+            <div class="name">カイン</div>
+            <div class="bar-bg"><div id="hp-fill" class="bar-fill" style="width: 100%;"></div></div>
+            <div id="hp-val" class="val">HP 120 / 120</div>
+            <div class="bar-bg" style="margin-top:5px;"><div id="mp-fill" class="bar-fill" style="width: 100%;"></div></div>
+            <div id="mp-val" class="val">MP 50 / 50</div>
         </div>
-        <div class="cain-card">
-            <span class="char-label" style="color:var(--cain)">カイン</span>
-            <div class="cain-stat-large">
-                <span>HP <span id="c-h">--</span></span>
-                <span>MP <span id="c-m">--</span></span>
-            </div>
-            <div class="dist-info">目的地まで: <span id="dist-val">10</span>km</div>
+        <div class="status-box" style="border-left-color: var(--accent-purple);">
+            <div class="name" style="color: var(--accent-purple);">オーエン</div>
+            <div id="owen-mood" style="font-size: 0.75em; line-height: 1.4;">ひどく退屈し、<br>爪先を眺めている。</div>
         </div>
     </div>
 
-    <div class="inv-bar"><span>倉庫: <b id="g-inv">0</b></span><span>手荷物: <b id="t-inv">0</b></span><span>甘味: <b id="sw">3</b></span></div>
+    <div id="assets">
+        <span>倉庫: <span id="storage-count">0</span></span>
+        <span>手荷物: <span id="bag-count">0</span></span>
+        <span>甘味: <span id="candy-count">3</span></span>
+        <span>残り: <span id="dist-count">10</span>km</span>
+    </div>
 
     <div id="log"></div>
 
-    <div class="controls">
-        <button id="btn-safe">慎重に進む<span class="sub">1km進行 / 消費小</span></button>
-        <button id="btn-bold">大胆に進む<span class="sub">2km進行 / 消費大</span></button>
-        <button id="btn-eat">甘味消費<span class="sub">オーエンを宥める</span></button>
-        <button id="btn-inn">宿屋に戻る<span class="sub">精算・距離リセット</span></button>
+    <div id="controls">
+        <button id="boss-btn" onclick="game.fightBoss()">深部に潜む影と対峙する</button>
+        
+        <button id="move-slow" onclick="game.move(1)">慎重に進む<br><small>1km進行 / 低リスク</small></button>
+        <button id="move-fast" onclick="game.move(2)">大胆に進む<br><small>2km進行 / 高リスク</small></button>
+        <button class="btn-sub" onclick="game.useCandy()">甘味を与える<br><small>オーエン機嫌回復</small></button>
+        <button class="btn-sub" onclick="game.goHome()">宿屋に戻る<br><small>精算・距離リセット</small></button>
     </div>
 
-<script>
-window.onload = function() {
-    const MASTER_ITEMS = { 'silver_coin': '古い銀貨', 'honey_pot': '蜂蜜酒の瓶', 'magic_crystal': '魔力の欠片' };
-    const MISSIONS = [
-        { id: 0, target: 'silver_coin', count: 3, label: '古い銀貨' },
-        { id: 1, target: 'honey_pot', count: 2, label: '蜂蜜酒の瓶' }
-    ];
+    <script>
+        const game = {
+            hp: 120, maxHp: 120,
+            mp: 50, maxMp: 50,
+            dist: 10,
+            storage: 0,
+            bag: 0,
+            candy: 3,
+            missionTarget: 3,
+            owenMood: 50, // 0:最悪 100:上機嫌
 
-    let state = {
-        o:{h:80,mh:80,m:120,mm:120}, c:{h:120,mh:120,m:50,mm:50},
-        globalInv: {}, tempInv: [], sweets: 3, missionIdx: 0, dist: 10
-    };
+            init() {
+                this.addLog("宿屋の主人：『悪いが、古い銀貨を3枚ほど集めてきてくれないか。話はそれからだ』", "system");
+                this.updateUI();
+            },
 
-    const owenMoods = ["不機嫌そうに爪を眺めている。", "カインの足取りを冷ややかに見ている。", "指先で小さな火を転がしている。", "周囲の闇を睨み、鼻で笑った。"];
+            addLog(text, type = "") {
+                const log = document.getElementById('log');
+                const div = document.createElement('div');
+                div.className = 'msg ' + type;
+                div.innerHTML = text;
+                log.appendChild(div);
+                log.scrollTop = log.scrollHeight;
+            },
 
-    const logEl = document.getElementById('log');
-    function addLog(m, c="") {
-        const d = document.createElement('div');
-        if(c) d.className = c;
-        d.innerHTML = m;
-        logEl.appendChild(d);
-        logEl.scrollTop = logEl.scrollHeight;
-    }
+            updateUI() {
+                document.getElementById('hp-fill').style.width = (this.hp / this.maxHp * 100) + '%';
+                document.getElementById('hp-val').innerText = `HP ${this.hp} / ${this.maxHp}`;
+                document.getElementById('storage-count').innerText = this.storage;
+                document.getElementById('bag-count').innerText = this.bag;
+                document.getElementById('candy-count').innerText = this.candy;
+                document.getElementById('dist-count').innerText = this.dist;
 
-    function updateUI() {
-        document.getElementById('c-h').innerText = state.c.h;
-        document.getElementById('c-m').innerText = state.c.m;
-        document.getElementById('dist-val').innerText = state.dist;
-        
-        // オーエンの機嫌
-        if(state.o.m < 30) document.getElementById('o-state').innerText = "魔力が枯渇し、ひどく苛立っている。";
-        else document.getElementById('o-state').innerText = owenMoods[Math.floor(Math.random()*owenMoods.length)];
+                const statusText = this.storage >= this.missionTarget ? 
+                    `<span class="gold">達成：宿屋へ戻れ</span>` : 
+                    `進行状況: ${this.storage} / ${this.missionTarget} (未達成)`;
+                document.getElementById('mission-status').innerHTML = statusText;
 
-        // ミッション計算：倉庫(global) + 手荷物(temp)
-        const m = MISSIONS[state.missionIdx] || {label:"全依頼完了", target:"", count:0};
-        const inG = state.globalInv[m.target] || 0;
-        const inT = state.tempInv.filter(id => id === m.target).length;
-        const total = inG + inT;
-        
-        const isReady = (m.target !== "" && total >= m.count);
-        document.getElementById('m-indicator').innerText = m.target ? `現在の目的：${m.label}を${m.count}個持ち帰れ` : "全ての依頼を達成した";
-        document.getElementById('m-detail').innerText = m.target ? `進行状況: ${total}/${m.count} (${isReady ? '達成：宿屋へ戻れ' : '未達成'})` : "探索を続けろ";
-        
-        if(isReady) document.getElementById('m-box').classList.add('achieved');
-        else document.getElementById('m-box').classList.remove('achieved');
-
-        document.getElementById('sw').innerText = state.sweets;
-        document.getElementById('t-inv').innerText = state.tempInv.length;
-        document.getElementById('g-inv').innerText = Object.values(state.globalInv).reduce((a,b)=>a+b,0);
-    }
-
-    function handleAction(type) {
-        if(state.c.h <= 0 && type !== 'inn') return;
-
-        if(type === 'safe' || type === 'bold') {
-            const isB = type === 'bold';
-            state.dist = Math.max(0, state.dist - (isB ? 2 : 1));
-            state.o.m = Math.max(0, state.o.m - (isB ? 20 : 8));
-            addLog(isB ? "オーエンが最短距離を突き進んだ。" : "カインが周囲を警戒し道を作った。");
-
-            if(Math.random() < 0.3) {
-                if(Math.random() < 0.5) { state.c.h -= 15; addLog("【因縁】カインがオーエンを庇い、傷を負った。", "log-ev"); }
-                else { state.o.m -= 15; addLog("【因縁】オーエンが退屈しのぎに魔法を浪費した。", "log-ev"); }
-            }
-
-            if(Math.random() < (isB ? 0.6 : 0.3)) {
-                state.c.h -= isB ? 30 : 15;
-                addLog("敵の攻撃。カインが無言で衝撃を受け止めた。", "log-dmg");
-                if(state.c.h <= 0) {
-                    addLog("【探索失敗】カインが倒れ、全てを失って撤退した。", "log-dmg");
-                    state.tempInv = []; state.dist = 10; state.c.h = 10;
+                // 0km判定
+                if (this.dist <= 0) {
+                    document.getElementById('move-slow').style.display = 'none';
+                    document.getElementById('move-fast').style.display = 'none';
+                    document.getElementById('boss-btn').style.display = 'block';
                 } else {
-                    const keys = Object.keys(MASTER_ITEMS);
-                    const loot = keys[Math.floor(Math.random()*keys.length)];
-                    state.tempInv.push(loot);
-                    addLog(`[${MASTER_ITEMS[loot]}]を回収。`, "log-sys");
+                    document.getElementById('move-slow').style.display = 'block';
+                    document.getElementById('move-fast').style.display = 'block';
+                    document.getElementById('boss-btn').style.display = 'none';
                 }
+            },
+
+            move(km) {
+                this.dist = Math.max(0, this.dist - km);
+                this.addLog(km === 1 ? "カインは周囲を警戒しながら歩を進めた。" : "カインは最短距離を突き進んだ。");
+                
+                // オーエンの自律行動（NPC化）
+                this.owenAction();
+
+                // 敵の攻撃判定
+                if (Math.random() < (km * 0.3)) {
+                    const dmg = Math.floor(Math.random() * 20) + 10;
+                    this.hp -= dmg;
+                    this.addLog(`魔物の影がカインを襲う。彼は無言で衝撃を受け止めた。`, "red");
+                    
+                    // アイテム獲得
+                    if (Math.random() < 0.5) {
+                        this.bag++;
+                        this.addLog("魔物を排除。 [古い銀貨] を回収した。");
+                    }
+                }
+
+                if (this.hp <= 0) this.die();
+                this.updateUI();
+            },
+
+            owenAction() {
+                const r = Math.random();
+                if (r < 0.3) {
+                    this.addLog("【オーエン】あくびをしながら、指先から放った魔力で魔物を塵に変えた。", "purple");
+                } else if (r < 0.5) {
+                    this.addLog("【オーエン】カインの歩みに合わせることもせず、気怠げに浮遊している。", "purple");
+                } else if (r < 0.6) {
+                    this.addLog("【オーエン】苛立ちを魔力に変えて突き進んだ。風圧がカインの頬を掠める。", "purple");
+                }
+            },
+
+            useCandy() {
+                if (this.candy > 0) {
+                    this.candy--;
+                    this.addLog("カインが差し出した菓子を、オーエンは無言で受け取り口に運んだ。", "purple");
+                    this.addLog("【オーエン】僅かに瞳の険しさが和らいだ気がする。", "purple");
+                    this.updateUI();
+                }
+            },
+
+            goHome() {
+                this.addLog("【帰還】成果を持ち帰り、体勢を立て直した。", "gold");
+                this.storage += this.bag;
+                if (this.bag > 0 && this.storage >= this.missionTarget) {
+                    this.addLog("【依頼達成】主人が依頼品を倉庫へ収めた。", "gold");
+                }
+                this.bag = 0;
+                this.hp = this.maxHp;
+                this.dist = 10;
+                this.updateUI();
+            },
+
+            die() {
+                this.addLog("カインが力尽きた。オーエンは舌打ちと共に荷物を捨て、彼を引きずって脱出した。", "red");
+                this.bag = 0;
+                this.hp = this.maxHp;
+                this.dist = 10;
+                this.updateUI();
+            },
+
+            fightBoss() {
+                this.addLog("深部の闇が形を成す。巨大な『厄災の残滓』が現れた。", "red");
+                this.addLog("【オーエン】「……邪魔だ」 紫の閃光が視界を白く染め上げる。", "purple");
+                this.addLog("凄まじい衝撃ののち、そこには何も残らなかった。", "gold");
+                this.addLog("第1章クリア。宿屋で一休みしよう。");
+                this.dist = 0; 
+                this.updateUI();
             }
-            if(state.dist === 0) addLog("目的地に到達。更なる深部へ続く道が見える。", "log-ev");
-        } else if(type === 'eat') {
-            if(state.sweets > 0) { state.sweets--; state.o.m = state.o.mm; addLog("オーエンは菓子を咀嚼し、わずかに機嫌を直した。"); }
-        } else if(type === 'inn') {
-            state.tempInv.forEach(id => { state.globalInv[id] = (state.globalInv[id]||0)+1; });
-            state.tempInv = [];
-            state.o.h=state.o.mh; state.o.m=state.o.mm; state.c.h=state.c.mh; state.c.m=state.c.mm; state.sweets=3; state.dist=10;
-            
-            const m = MISSIONS[state.missionIdx];
-            if(m && (state.globalInv[m.target]||0) >= m.count) {
-                addLog(`【完了】宿屋の主人が[${m.label}]を受け取った。`, "log-ev");
-                state.missionIdx++;
-            } else { addLog("宿屋に帰還。カインは装備を整え、オーエンは窓の外を眺めた。"); }
-        }
-        updateUI();
-    }
+        };
 
-    document.getElementById('btn-safe').onclick = () => handleAction('safe');
-    document.getElementById('btn-bold').onclick = () => handleAction('bold');
-    document.getElementById('btn-eat').onclick = () => handleAction('eat');
-    document.getElementById('btn-inn').onclick = () => handleAction('inn');
-
-    updateUI();
-    addLog("主人が言った。「古い銀貨を3枚、持ってきてくれ」。");
-};
-</script>
+        game.init();
+    </script>
 </body>
 </html>
