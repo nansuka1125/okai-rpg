@@ -3,234 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Twilight Resonance RPG</title>
+    <title>Resonance of the Eye -RPG-</title>
     <style>
         :root {
-            --bg-color: #1a1a1a;
-            --panel-color: #2a2a2a;
-            --text-color: #e0e0e0;
-            --accent-color: #d4af37;
-            --danger-color: #c0392b;
+            --bg-color: #0d0d0d;
+            --panel-color: #1e1e26;
+            --text-color: #d1d1d1;
+            --owen-color: #a569bd;
+            --cain-color: #f1c40f;
+            --accent-color: #e74c3c;
         }
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: 'Hiragino Mincho ProN', 'serif';
+            font-family: 'Hiragino Mincho ProN', serif;
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            overflow: hidden;
         }
         #game-container {
-            width: 400px;
-            height: 600px;
+            width: 450px;
+            height: 650px;
             background: var(--panel-color);
-            border: 2px solid var(--accent-color);
+            border: 1px solid #444;
             display: flex;
             flex-direction: column;
             padding: 20px;
             box-sizing: border-box;
-            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #444;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+        }
+        .location-tag {
+            font-size: 0.8rem;
+            color: var(--cain-color);
+            letter-spacing: 0.1rem;
+        }
+        .party-status {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .char-box {
+            background: #252530;
+            padding: 8px;
+            border-left: 4px solid #555;
+            font-size: 0.85rem;
+        }
+        .char-box.owen { border-color: var(--owen-color); }
+        .char-box.cain { border-color: var(--cain-color); }
+        
         #log {
             flex-grow: 1;
-            border: 1px solid #444;
+            background: #000;
+            border: 1px solid #333;
             padding: 10px;
             overflow-y: auto;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-            background: #111;
-        }
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 0.8rem;
-            border-bottom: 1px solid #444;
-            padding-bottom: 5px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
         }
         .controls {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 8px;
         }
         button {
-            background: #333;
-            color: white;
-            border: 1px solid var(--accent-color);
+            background: #2c3e50;
+            color: #fff;
+            border: 1px solid #555;
             padding: 10px;
             cursor: pointer;
-            transition: 0.2s;
+            font-size: 0.8rem;
         }
-        button:hover {
-            background: var(--accent-color);
-            color: black;
-        }
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .event-text { color: var(--accent-color); font-style: italic; }
-        .damage-text { color: var(--danger-color); }
-        .item-text { color: #2ecc71; }
+        button:hover:not(:disabled) { background: #34495e; border-color: var(--cain-color); }
+        button:disabled { opacity: 0.3; }
+        
+        .log-owen { color: var(--owen-color); }
+        .log-cain { color: var(--cain-color); }
+        .log-event { color: #5dade2; font-weight: bold; }
+        .log-sys { color: #888; font-size: 0.75rem; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <div class="status-bar">
-        <div>HP: <span id="hp">100</span>/100</div>
-        <div>素材: <span id="materials">0</span></div>
-        <div>Lv: <span id="weapon-lv">1</span></div>
+    <div class="header">
+        <div id="location" class="location-tag">始まりの宿屋</div>
     </div>
+
+    <div class="party-status">
+        <div class="char-box owen">
+            <div>オーエン</div>
+            <div>HP: <span id="owen-hp">80</span>/80</div>
+            <div>MP: <span id="owen-mp">120</span>/120</div>
+        </div>
+        <div class="char-box cain">
+            <div>カイン</div>
+            <div>HP: <span id="cain-hp">120</span>/120</div>
+            <div>MP: <span id="cain-mp">50</span>/50</div>
+        </div>
+    </div>
+
     <div style="font-size: 0.7rem; color: #888; margin-bottom: 5px;">
-        武器: <span id="weapon-name">錆びた剣</span>
+        所持素材: <span id="mats">0</span> | 武器: <span id="wep-name">見習い騎士の剣</span> (ATK+<span id="wep-atk">5</span>)
     </div>
     
     <div id="log"></div>
 
     <div class="controls">
-        <button id="btn-explore" onclick="explore()">探索に出る</button>
-        <button id="btn-rest" onclick="rest()">宿屋で休む</button>
-        <button id="btn-upgrade" onclick="upgradeWeapon()">武器を鍛える</button>
-        <button id="btn-eat" onclick="eatFood()">甘味を食べる</button>
+        <button id="btn-explore" onclick="runTask('explore')">周囲を探索</button>
+        <button id="btn-rest" onclick="runTask('rest')">宿屋で休む</button>
+        <button id="btn-upgrade" onclick="runTask('upgrade')">武器を鍛える</button>
+        <button id="btn-eat" onclick="runTask('eat')">甘味を与える</button>
     </div>
 </div>
 
 <script>
-    // --- 初期データ ---
-    const gameState = {
-        hp: 100,
-        maxHp: 100,
-        materials: 0,
-        weaponLv: 1,
-        weaponBaseName: "剣",
-        affinity: 0, // 親密度（将来用拡張変数）
-        isExploring: false
+    const state = {
+        owen: { hp: 80, maxHp: 80, mp: 120, maxMp: 120 },
+        cain: { hp: 120, maxHp: 120, mp: 50, maxMp: 50 },
+        mats: 0,
+        atk: 5,
+        wepName: "見習い騎士の剣",
+        locIdx: 0,
+        step: 0
     };
 
-    const weaponPrefixes = ["呪いの", "煌めく", "虚飾の", "誠実な", "血塗られた", "甘い", "不機嫌な", "誇り高き"];
-    
-    const innEvents = [
-        "騎士の隣で、魔術師が不機嫌そうに銀紙を剥いて菓子を口に放り込んでいる。",
-        "酔った騎士が陽気にステップを踏み始め、魔術師がその裾を冷ややかに踏みつけた。",
-        "魔術師の金色の右目が、騎士の紅い左目をじっと見つめ、その後すぐに逸らされた。",
-        "誰の姿も見えないはずの騎士が、迷いなく魔術師の座る椅子まで歩み寄った。",
-        "魔術師が食べかけの菓子を投げつけると、騎士はそれを鮮やかに受け止めて笑った。",
-        "宿の主人が騎士に酒を勧めるが、魔術師がそのグラスに毒々しい色の粉を振りかけた。"
+    const locations = ["薄暗い路地裏", "静まり返った広場", "霧深い裏道", "不気味な魔力の溜まり場", "厄災の爪痕"];
+    const enemies = [
+        { name: "厄災の残滓", drop: "濁った瞳" },
+        { name: "浮遊する眼球", drop: "輝く鱗" },
+        { name: "這い寄る影", drop: "粘着質の液" }
+    ];
+    const prefixes = ["寂しがり屋の", "眩耀の", "不機嫌な", "孤高の", "血塗られた", "甘美なる"];
+    const baseWeps = ["トランク", "長剣", "杖", "メイス", "レイピア"];
+
+    const innNarrations = [
+        "宿の娘に微笑みかけるカインの背後に、オーエンが「影の足枷」をかけて転ばせた。",
+        "看板娘から林檎を貰ったカインだが、オーエンがその林檎を無言で毒々しい紫色の飴に変えた。",
+        "カインが周囲の注目を浴びるたび、オーエンは露骨に不機嫌な音を立てて紅茶を啜っている。",
+        "カインが踊り出す前に、オーエンがその靴底を床に縫い付ける魔術を密かに放った。"
     ];
 
     const logEl = document.getElementById('log');
 
-    // --- ユーティリティ ---
-    function addLog(text, className = "") {
-        const p = document.createElement('p');
-        p.className = className;
+    function addLog(text, cls = "") {
+        const p = document.createElement('div');
+        p.className = cls;
         p.innerHTML = text;
         logEl.appendChild(p);
         logEl.scrollTop = logEl.scrollHeight;
     }
 
     function updateUI() {
-        document.getElementById('hp').innerText = gameState.hp;
-        document.getElementById('materials').innerText = gameState.materials;
-        document.getElementById('weapon-lv').innerText = gameState.weaponLv;
-        document.getElementById('weapon-name').innerText = gameState.weaponBaseName;
+        document.getElementById('owen-hp').innerText = state.owen.hp;
+        document.getElementById('owen-mp').innerText = state.owen.mp;
+        document.getElementById('cain-hp').innerText = state.cain.hp;
+        document.getElementById('cain-mp').innerText = state.cain.mp;
+        document.getElementById('mats').innerText = state.mats;
+        document.getElementById('wep-name').innerText = state.wepName;
+        document.getElementById('wep-atk').innerText = state.atk;
+        document.getElementById('location').innerText = locations[state.locIdx];
     }
 
-    // --- ゲームロジック ---
-
-    // 1. 探索・オート戦闘
-    async function explore() {
-        if(gameState.hp <= 20) {
-            addLog("体力が低すぎます。宿屋で休んでください。");
-            return;
-        }
-        setButtons(true);
-        addLog("--- 周辺を探索中 ---");
-        
-        await sleep(1000);
-        
-        const enemyHp = 20 + (gameState.weaponLv * 5);
-        addLog("厄災の残滓が現れた！");
-        
-        let battle = true;
-        while(battle) {
-            // プレイヤー攻撃
-            const dmg = 10 + (gameState.weaponLv * 2);
-            addLog(`攻撃！ ${dmg}のダメージ。`);
-            await sleep(500);
-            
-            if(Math.random() > 0.5) {
-                addLog("魔物からの反撃！", "damage-text");
-                const eDmg = 15;
-                gameState.hp -= eDmg;
-                updateUI();
-                if(gameState.hp <= 0) {
-                    gameState.hp = 1;
-                    addLog("意識が遠のく中、誰かに抱えられ宿へ運ばれた...");
-                    battle = false;
-                }
-            }
-
-            if(battle) {
-                addLog("魔物を討伐した。素材を2つ入手。", "item-text");
-                gameState.materials += 2;
-                battle = false;
-            }
-        }
-        
-        setButtons(false);
+    async function runTask(type) {
+        setBtns(true);
+        if (type === 'explore') await handleExplore();
+        else if (type === 'rest') handleRest();
+        else if (type === 'upgrade') handleUpgrade();
+        else if (type === 'eat') handleEat();
+        setBtns(false);
         updateUI();
     }
 
-    // 2. 宿屋（関係性描写）
-    function rest() {
-        gameState.hp = gameState.maxHp;
-        addLog("宿屋に泊まった。体力が全快した。");
-        
-        // 関係性要素（30%の頻度、または宿泊時確定）
-        const event = innEvents[Math.floor(Math.random() * innEvents.length)];
-        addLog(event, "event-text");
-        
-        updateUI();
-    }
+    async function handleExplore() {
+        state.step++;
+        if (state.step % 3 === 0) state.locIdx = (state.locIdx + 1) % locations.length;
 
-    // 3. 武器強化システム（ランダム改名）
-    function upgradeWeapon() {
-        if(gameState.materials >= 5) {
-            gameState.materials -= 5;
-            gameState.weaponLv++;
-            const pre = weaponPrefixes[Math.floor(Math.random() * weaponPrefixes.length)];
-            gameState.weaponBaseName = `${pre}剣 +${gameState.weaponLv}`;
-            addLog(`武器が鍛え直された：${gameState.weaponBaseName}`, "item-text");
-            updateUI();
+        // 稀に発生するカインの傷イベント
+        if (Math.random() < 0.2) {
+            addLog("カインが足を止め、何も無い虚空を見つめた。オーエンが舌打ちしながらその手を強く引き、歩き出す。", "log-event");
         } else {
-            addLog("素材が足りません（必要：5）");
+            const enemy = enemies[Math.floor(Math.random() * enemies.length)];
+            addLog(`${enemy.name}に遭遇！`, "log-sys");
+            
+            // 戦闘描写
+            addLog("カインが前に出てオーエンを庇い、鋭い一閃を放つ！", "log-cain");
+            addLog("オーエンが背後から冷笑を浮かべ、広範囲の魔術を展開した。", "log-owen");
+            
+            state.owen.mp = Math.max(0, state.owen.mp - 10);
+            state.cain.hp = Math.max(5, state.cain.hp - 10);
+            state.mats += 2;
+            addLog(`${enemy.drop}を2つ手に入れた。`, "log-sys");
         }
     }
 
-    function eatFood() {
-        if(gameState.hp < gameState.maxHp) {
-            gameState.hp = Math.min(gameState.maxHp, gameState.hp + 20);
-            addLog("甘いケーキを食べた。少し元気が出た。");
-            updateUI();
+    function handleRest() {
+        state.owen.hp = state.owen.maxHp;
+        state.owen.mp = state.owen.maxMp;
+        state.cain.hp = state.cain.maxHp;
+        state.cain.mp = state.cain.maxMp;
+        addLog("宿屋の柔らかなベッドで休息した。全ステータスが回復。", "log-sys");
+        const n = innNarrations[Math.floor(Math.random() * innNarrations.length)];
+        addLog(n, "log-event");
+    }
+
+    function handleUpgrade() {
+        if (state.mats >= 5) {
+            state.mats -= 5;
+            state.atk += 3;
+            const pre = prefixes[Math.floor(Math.random() * prefixes.length)];
+            const base = baseWeps[Math.floor(Math.random() * baseWeps.length)];
+            state.wepName = pre + base;
+            addLog(`武器を鍛造した：${state.wepName}`, "log-sys");
+        } else {
+            addLog("素材が足りない（必要数：5）", "log-sys");
         }
     }
 
-    function setButtons(disabled) {
-        document.querySelectorAll('button').forEach(b => b.disabled = disabled);
+    function handleEat() {
+        addLog("高級なケーキを振る舞った。", "log-sys");
+        addLog("オーエンは不満げな顔をしながらも、一口ごとにMPを回復させていく。", "log-owen");
+        state.owen.mp = state.owen.maxMp;
+        addLog("カインは微笑んでいるが、甘すぎて少し困っているようだ。", "log-cain");
+        state.cain.mp = Math.min(state.cain.maxMp, state.cain.mp + 5);
     }
 
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+    function setBtns(d) {
+        document.querySelectorAll('button').forEach(b => b.disabled = d);
     }
 
-    // 初期化
+    addLog("二人の奇妙な旅が始まる。");
     updateUI();
-    addLog("古びた宿屋から旅が始まる。");
 </script>
 
 </body>
