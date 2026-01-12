@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twilight Resonance RPG</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --panel-color: #2a2a2a;
+            --text-color: #e0e0e0;
+            --accent-color: #d4af37;
+            --danger-color: #c0392b;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Hiragino Mincho ProN', 'serif';
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #game-container {
+            width: 400px;
+            height: 600px;
+            background: var(--panel-color);
+            border: 2px solid var(--accent-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        #log {
+            flex-grow: 1;
+            border: 1px solid #444;
+            padding: 10px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            background: #111;
+        }
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.8rem;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        button {
+            background: #333;
+            color: white;
+            border: 1px solid var(--accent-color);
+            padding: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover {
+            background: var(--accent-color);
+            color: black;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .event-text { color: var(--accent-color); font-style: italic; }
+        .damage-text { color: var(--danger-color); }
+        .item-text { color: #2ecc71; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="status-bar">
+        <div>HP: <span id="hp">100</span>/100</div>
+        <div>素材: <span id="materials">0</span></div>
+        <div>Lv: <span id="weapon-lv">1</span></div>
+    </div>
+    <div style="font-size: 0.7rem; color: #888; margin-bottom: 5px;">
+        武器: <span id="weapon-name">錆びた剣</span>
+    </div>
+    
+    <div id="log"></div>
+
+    <div class="controls">
+        <button id="btn-explore" onclick="explore()">探索に出る</button>
+        <button id="btn-rest" onclick="rest()">宿屋で休む</button>
+        <button id="btn-upgrade" onclick="upgradeWeapon()">武器を鍛える</button>
+        <button id="btn-eat" onclick="eatFood()">甘味を食べる</button>
+    </div>
+</div>
+
+<script>
+    // --- 初期データ ---
+    const gameState = {
+        hp: 100,
+        maxHp: 100,
+        materials: 0,
+        weaponLv: 1,
+        weaponBaseName: "剣",
+        affinity: 0, // 親密度（将来用拡張変数）
+        isExploring: false
+    };
+
+    const weaponPrefixes = ["呪いの", "煌めく", "虚飾の", "誠実な", "血塗られた", "甘い", "不機嫌な", "誇り高き"];
+    
+    const innEvents = [
+        "騎士の隣で、魔術師が不機嫌そうに銀紙を剥いて菓子を口に放り込んでいる。",
+        "酔った騎士が陽気にステップを踏み始め、魔術師がその裾を冷ややかに踏みつけた。",
+        "魔術師の金色の右目が、騎士の紅い左目をじっと見つめ、その後すぐに逸らされた。",
+        "誰の姿も見えないはずの騎士が、迷いなく魔術師の座る椅子まで歩み寄った。",
+        "魔術師が食べかけの菓子を投げつけると、騎士はそれを鮮やかに受け止めて笑った。",
+        "宿の主人が騎士に酒を勧めるが、魔術師がそのグラスに毒々しい色の粉を振りかけた。"
+    ];
+
+    const logEl = document.getElementById('log');
+
+    // --- ユーティリティ ---
+    function addLog(text, className = "") {
+        const p = document.createElement('p');
+        p.className = className;
+        p.innerHTML = text;
+        logEl.appendChild(p);
+        logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function updateUI() {
+        document.getElementById('hp').innerText = gameState.hp;
+        document.getElementById('materials').innerText = gameState.materials;
+        document.getElementById('weapon-lv').innerText = gameState.weaponLv;
+        document.getElementById('weapon-name').innerText = gameState.weaponBaseName;
+    }
+
+    // --- ゲームロジック ---
+
+    // 1. 探索・オート戦闘
+    async function explore() {
+        if(gameState.hp <= 20) {
+            addLog("体力が低すぎます。宿屋で休んでください。");
+            return;
+        }
+        setButtons(true);
+        addLog("--- 周辺を探索中 ---");
+        
+        await sleep(1000);
+        
+        const enemyHp = 20 + (gameState.weaponLv * 5);
+        addLog("厄災の残滓が現れた！");
+        
+        let battle = true;
+        while(battle) {
+            // プレイヤー攻撃
+            const dmg = 10 + (gameState.weaponLv * 2);
+            addLog(`攻撃！ ${dmg}のダメージ。`);
+            await sleep(500);
+            
+            if(Math.random() > 0.5) {
+                addLog("魔物からの反撃！", "damage-text");
+                const eDmg = 15;
+                gameState.hp -= eDmg;
+                updateUI();
+                if(gameState.hp <= 0) {
+                    gameState.hp = 1;
+                    addLog("意識が遠のく中、誰かに抱えられ宿へ運ばれた...");
+                    battle = false;
+                }
+            }
+
+            if(battle) {
+                addLog("魔物を討伐した。素材を2つ入手。", "item-text");
+                gameState.materials += 2;
+                battle = false;
+            }
+        }
+        
+        setButtons(false);
+        updateUI();
+    }
+
+    // 2. 宿屋（関係性描写）
+    function rest() {
+        gameState.hp = gameState.maxHp;
+        addLog("宿屋に泊まった。体力が全快した。");
+        
+        // 関係性要素（30%の頻度、または宿泊時確定）
+        const event = innEvents[Math.floor(Math.random() * innEvents.length)];
+        addLog(event, "event-text");
+        
+        updateUI();
+    }
+
+    // 3. 武器強化システム（ランダム改名）
+    function upgradeWeapon() {
+        if(gameState.materials >= 5) {
+            gameState.materials -= 5;
+            gameState.weaponLv++;
+            const pre = weaponPrefixes[Math.floor(Math.random() * weaponPrefixes.length)];
+            gameState.weaponBaseName = `${pre}剣 +${gameState.weaponLv}`;
+            addLog(`武器が鍛え直された：${gameState.weaponBaseName}`, "item-text");
+            updateUI();
+        } else {
+            addLog("素材が足りません（必要：5）");
+        }
+    }
+
+    function eatFood() {
+        if(gameState.hp < gameState.maxHp) {
+            gameState.hp = Math.min(gameState.maxHp, gameState.hp + 20);
+            addLog("甘いケーキを食べた。少し元気が出た。");
+            updateUI();
+        }
+    }
+
+    function setButtons(disabled) {
+        document.querySelectorAll('button').forEach(b => b.disabled = disabled);
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // 初期化
+    updateUI();
+    addLog("古びた宿屋から旅が始まる。");
+</script>
+
+</body>
+</html>
