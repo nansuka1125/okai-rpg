@@ -3,191 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Resonance RPG -Compact Layout-</title>
+    <title>Resonance RPG -Ultra Slim-</title>
     <style>
         :root { --bg: #0a0a0c; --panel: #1a1a20; --owen: #9b59b6; --cain: #f1c40f; --hp: #e74c3c; --text: #dcdde1; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
-            background: var(--bg); color: var(--text); font-family: "Hiragino Mincho ProN", serif; 
-            margin: 0; padding: 6px; display: flex; flex-direction: column; 
+            background: var(--bg); color: var(--text); font-family: sans-serif; 
+            margin: 0; padding: 5px; display: flex; flex-direction: column; 
             height: 100vh; width: 100vw; overflow: hidden;
         }
         
-        /* 1. ミッション表示（最上部・さらに薄く） */
-        .mission-header { 
+        /* ミッション：最上部 */
+        .m-hdr { 
             background: #000; border: 1px solid var(--cain); padding: 4px; 
             border-radius: 4px; margin-bottom: 4px; text-align: center; flex-shrink: 0; 
         }
-        #m-indicator { font-size: 12px; font-weight: bold; color: var(--cain); display: block; }
-        .m-status { font-size: 10px; color: #fff; }
+        #m-idx { font-size: 11px; font-weight: bold; color: var(--cain); display: block; }
+        .m-st { font-size: 10px; color: #fff; }
         .achieved { background: var(--cain) !important; color: #000 !important; }
 
-        /* 2. カインのステータス（横長・極小化） */
-        .status-area { 
-            background: rgba(241, 196, 15, 0.05); border: 1px solid #333;
-            padding: 4px 10px; border-radius: 4px; margin-bottom: 4px; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: space-between;
+        /* カイン：極薄の一行表示（オーエンは完全に削除） */
+        .stat-line { 
+            background: #111; padding: 4px 8px; border-radius: 4px; margin-bottom: 4px;
+            display: flex; align-items: center; gap: 10px; flex-shrink: 0; border: 1px solid #333;
         }
-        .cain-label { font-size: 10px; font-weight: bold; color: var(--cain); margin-right: 10px; }
-        .stat-group { display: flex; align-items: center; gap: 15px; flex-grow: 1; }
-        .stat-item { display: flex; align-items: center; gap: 6px; flex-grow: 1; }
-        .stat-bar-bg { background: #222; height: 6px; border-radius: 3px; flex-grow: 1; overflow: hidden; position: relative; }
-        #c-h-bar { background: var(--hp); height: 100%; transition: width 0.3s; }
-        #c-m-bar { background: #3498db; height: 100%; transition: width 0.3s; }
-        .stat-num { font-size: 10px; font-family: monospace; min-width: 45px; text-align: right; }
+        .c-lbl { font-size: 10px; font-weight: bold; color: var(--cain); }
+        .bar-wrap { flex-grow: 1; display: flex; gap: 8px; }
+        .bar-inner { flex-grow: 1; display: flex; align-items: center; gap: 4px; }
+        .bg-b { background: #222; height: 5px; flex-grow: 1; border-radius: 2px; overflow: hidden; }
+        #h-fill { background: var(--hp); height: 100%; transition: width 0.3s; }
+        #m-fill { background: #3498db; height: 100%; transition: width 0.3s; }
+        .num-t { font-size: 9px; font-family: monospace; min-width: 35px; }
 
-        /* 3. 情報バー（さらにコンパクトに） */
-        .info-bar { font-size: 10px; background: #1a1a1a; padding: 3px; display: flex; justify-content: space-around; margin-bottom: 4px; border-radius: 4px; flex-shrink: 0; }
-        .info-bar b { color: var(--cain); }
-
-        /* 4. ログ（ここを最大化） */
+        /* 情報：一行 */
+        .i-bar { font-size: 10px; background: #000; padding: 3px; display: flex; justify-content: space-around; margin-bottom: 4px; flex-shrink: 0; border-bottom: 1px solid #222; }
+        
+        /* ログ：ここが最大の広さを持つ */
         #log { 
-            background: #000; flex-grow: 1; overflow-y: auto; padding: 10px; 
-            font-size: 12px; line-height: 1.5; border: 1px solid #222; 
-            margin-bottom: 6px; border-radius: 4px; 
+            background: #000; flex-grow: 1; overflow-y: auto; padding: 8px; 
+            font-size: 12px; line-height: 1.4; margin-bottom: 4px;
         }
         .log-owen { color: var(--owen); font-weight: bold; }
-        .log-ev { color: #55efc4; } .log-dmg { color: #ff7675; } .log-sys { color: #888; font-size: 10px; }
+        .log-dmg { color: #ff7675; } .log-sys { color: #888; font-size: 10px; }
 
-        /* 5. 操作ボタン（最下部に完全固定） */
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom); }
+        /* ボタン：最下部固定 */
+        .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; flex-shrink: 0; padding-bottom: 5px; }
         button { 
-            background: #2c3e50; color: #fff; border: 1px solid #444; padding: 6px 2px; 
-            border-radius: 4px; font-size: 11px; font-weight: bold; min-height: 46px; cursor: pointer; 
+            background: #252e38; color: #fff; border: 1px solid #444; padding: 5px; 
+            border-radius: 4px; font-size: 11px; font-weight: bold; min-height: 44px; cursor: pointer; 
         }
-        button:active { background: #1a252f; border-color: var(--cain); }
-        .sub { font-size: 9px; opacity: 0.7; display: block; font-weight: normal; }
-        #btn-boss { background: #8e44ad; grid-column: span 2; display: none; border-color: var(--owen); }
+        #btn-boss { background: #633277; grid-column: span 2; display: none; border-color: var(--owen); }
+        .sub { font-size: 8px; opacity: 0.7; display: block; font-weight: normal; }
     </style>
 </head>
 <body>
 
-    <div class="mission-header" id="m-box">
-        <span id="m-indicator">目的：古い銀貨を3枚持ち帰れ</span>
-        <span class="m-status" id="m-detail">0 / 3 (未達成)</span>
+    <div class="m-hdr" id="m-box">
+        <span id="m-idx">目的：古い銀貨を3枚持ち帰れ</span>
+        <span class="m-st" id="m-det">0 / 3 (未達成)</span>
     </div>
 
-    <div class="status-area">
-        <span class="cain-label">CAIN</span>
-        <div class="stat-group">
-            <div class="stat-item">
-                <span class="stat-num">HP</span>
-                <div class="stat-bar-bg"><div id="c-h-bar" style="width: 100%;"></div></div>
-                <span class="stat-num" id="c-h-txt">120/120</span>
+    <div class="stat-line">
+        <span class="c-lbl">CAIN</span>
+        <div class="bar-wrap">
+            <div class="bar-inner">
+                <span class="num-t">HP</span>
+                <div class="bg-b"><div id="h-fill" style="width: 100%;"></div></div>
             </div>
-            <div class="stat-item">
-                <span class="stat-num" style="color:#3498db">MP</span>
-                <div class="stat-bar-bg"><div id="c-m-bar" style="width: 100%;"></div></div>
-                <span class="stat-num" id="c-m-txt">50/50</span>
+            <div class="bar-inner">
+                <span class="num-t">MP</span>
+                <div class="bg-b"><div id="m-fill" style="width: 100%;"></div></div>
             </div>
         </div>
     </div>
 
-    <div class="info-bar">
+    <div class="i-bar">
         <span>倉庫:<b id="g-inv">0</b></span>
         <span>手荷物:<b id="t-inv">0</b></span>
         <span>甘味:<b id="sw">3</b></span>
-        <span>残り:<b id="dist-val">10</b>km</span>
+        <span>残り:<b id="dist">10</b>km</span>
     </div>
 
     <div id="log"></div>
 
-    <div class="controls">
-        <button id="btn-boss" onclick="handleAction('boss')">深部に潜む影と対峙する</button>
-        <button onclick="handleAction('safe')">慎重に進む<span class="sub">1km進行 / 低リスク</span></button>
-        <button onclick="handleAction('bold')">大胆に進む<span class="sub">2km進行 / 高リスク</span></button>
-        <button onclick="handleAction('eat')">甘味消費<span class="sub">オーエンを宥める</span></button>
-        <button onclick="handleAction('inn')">宿屋に戻る<span class="sub">精算・全回復</span></button>
+    <div class="btns">
+        <button id="btn-boss" onclick="act('boss')">深部に潜む影を排除する</button>
+        <button onclick="act('safe')">慎重に進む<span class="sub">1km進行 / 低リスク</span></button>
+        <button onclick="act('bold')">大胆に進む<span class="sub">2km進行 / 高リスク</span></button>
+        <button onclick="act('eat')">甘味消費<span class="sub">オーエンを宥める</span></button>
+        <button onclick="act('inn')">宿屋に戻る<span class="sub">精算・回復</span></button>
     </div>
 
 <script>
 window.onload = function() {
-    const MASTER_ITEMS = { 'silver_coin': '古い銀貨', 'honey_pot': '蜂蜜酒の瓶' };
-    const MISSIONS = [
-        { id: 0, target: 'silver_coin', count: 3, label: '古い銀貨' },
-        { id: 1, target: 'honey_pot', count: 2, label: '蜂蜜酒の瓶' }
-    ];
+    const ITEMS = { 'coin': '古い銀貨', 'pot': '蜂蜜酒' };
+    const MISSIONS = [{ id: 0, target: 'coin', count: 3, label: '古い銀貨' }];
 
-    let state = {
-        o:{m:120,mm:120}, c:{h:120,mh:120,m:50,mm:50},
-        globalInv: {}, tempInv: [], sweets: 3, missionIdx: 0, dist: 10
+    let st = {
+        o_m: 120, o_mm: 120,
+        c_h: 120, c_mh: 120, c_m: 50, c_mm: 50,
+        gInv: {}, tInv: [], sw: 3, mIdx: 0, dist: 10
     };
 
-    function updateUI() {
-        document.getElementById('c-h-txt').innerText = `${state.c.h}/${state.c.mh}`;
-        document.getElementById('c-h-bar').style.width = (state.c.h / state.c.mh * 100) + "%";
-        document.getElementById('c-m-txt').innerText = `${state.c.m}/${state.c.mm}`;
-        document.getElementById('c-m-bar').style.width = (state.c.m / state.c.mm * 100) + "%";
-        document.getElementById('dist-val').innerText = state.dist;
-        document.getElementById('btn-boss').style.display = (state.dist === 0) ? "block" : "none";
+    function ui() {
+        document.getElementById('h-fill').style.width = (st.c_h / st.c_mh * 100) + "%";
+        document.getElementById('m-fill').style.width = (st.c_m / st.c_mm * 100) + "%";
+        document.getElementById('dist').innerText = st.dist;
+        document.getElementById('btn-boss').style.display = (st.dist === 0) ? "block" : "none";
 
-        const m = MISSIONS[state.missionIdx] || {label:"全依頼完了", target:"", count:0};
-        const total = (state.globalInv[m.target] || 0) + state.tempInv.filter(id => id === m.target).length;
-        const isReady = (m.target !== "" && total >= m.count);
+        const m = MISSIONS[st.mIdx] || {label:"完了", target:"", count:0};
+        const total = (st.gInv[m.target] || 0) + st.tInv.filter(id => id === m.target).length;
+        const ready = (m.target !== "" && total >= m.count);
         
-        document.getElementById('m-indicator').innerText = m.target ? `目的：${m.label}を${m.count}枚持ち帰れ` : "全依頼完了";
-        document.getElementById('m-detail').innerText = `${total} / ${m.count} (${isReady ? '達成：宿屋へ戻れ' : '未達成'})`;
-        document.getElementById('m-box').className = isReady ? "mission-header achieved" : "mission-header";
+        document.getElementById('m-idx').innerText = m.target ? `目的：${m.label}を${m.count}個` : "全依頼完了";
+        document.getElementById('m-det').innerText = `${total} / ${m.count} (${ready ? '達成：宿屋へ' : '未達成'})`;
+        document.getElementById('m-box').className = ready ? "m-hdr achieved" : "m-hdr";
 
-        document.getElementById('sw').innerText = state.sweets;
-        document.getElementById('t-inv').innerText = state.tempInv.length;
-        document.getElementById('g-inv').innerText = Object.values(state.globalInv).reduce((a,b)=>a+b,0);
+        document.getElementById('sw').innerText = st.sw;
+        document.getElementById('t-inv').innerText = st.tInv.length;
+        document.getElementById('g-inv').innerText = Object.values(st.gInv).reduce((a,b)=>a+b,0);
     }
 
-    window.handleAction = function(type) {
-        if(state.c.h <= 0 && type !== 'inn') return;
+    window.act = function(type) {
+        if(st.c_h <= 0 && type !== 'inn') return;
         const log = document.getElementById('log');
-        const addLog = (m, c="") => {
-            const d = document.createElement('div'); if(c) d.className = c;
-            d.innerHTML = m; log.appendChild(d); log.scrollTop = log.scrollHeight;
+        const add = (txt, cls="") => {
+            const d = document.createElement('div'); if(cls) d.className = cls;
+            d.innerHTML = txt; log.appendChild(d); log.scrollTop = log.scrollHeight;
         };
 
         if(type === 'safe' || type === 'bold') {
             const isB = type === 'bold';
-            state.dist = Math.max(0, state.dist - (isB ? 2 : 1));
-            state.o.m = Math.max(0, state.o.m - (isB ? 20 : 8));
-            addLog(isB ? "オーエンが最短距離を突き進んだ。" : "カインが周囲を警戒し道を作った。");
+            st.dist = Math.max(0, st.dist - (isB ? 2 : 1));
+            st.o_m -= (isB ? 20 : 8);
+            add(isB ? "オーエンが最短距離を突き進んだ。" : "カインが周囲を警戒し道を作った。");
 
-            if(Math.random() < 0.25) {
-                addLog("<span class='log-owen'>【オーエン】</span>「……邪魔だ」 紫の閃光が辺りを薙ぎ払う。", "log-owen");
-            }
+            if(Math.random() < 0.2) add("<span class='log-owen'>【オーエン】</span>「……目障りだ」 紫の炎が敵を焼き払う。", "log-owen");
 
-            if(Math.random() < (isB ? 0.6 : 0.25)) {
-                state.c.h -= isB ? 30 : 15;
-                addLog("魔物の影がカインを襲う。彼は無言で衝撃を受け止めた。", "log-dmg");
-                if(state.c.h <= 0) {
-                    addLog("【全滅】カインが倒れ、全てを失って這い戻った。", "log-dmg");
-                    state.tempInv = []; state.dist = 10; state.c.h = 10;
+            if(Math.random() < (isB ? 0.5 : 0.2)) {
+                st.c_h -= isB ? 30 : 15;
+                add("敵の強襲。カインが盾となり衝撃を殺した。", "log-dmg");
+                if(st.c_h <= 0) {
+                    add("【全滅】カインが倒れ、全てを失って這い戻った。", "log-dmg");
+                    st.tInv = []; st.dist = 10; st.c_h = 10;
                 } else {
-                    const loot = Object.keys(MASTER_ITEMS)[Math.floor(Math.random()*2)];
-                    state.tempInv.push(loot);
-                    addLog(`[${MASTER_ITEMS[loot]}]を回収。`, "log-sys");
+                    st.tInv.push('coin');
+                    add("[古い銀貨]を回収。", "log-sys");
                 }
             }
         } else if(type === 'boss') {
-            addLog("<span class='log-owen'>【オーエン】</span>「塵に還れ」 凄まじい衝撃とともに深部の闇が霧散した。", "log-owen");
-            addLog("目的地クリア。宿屋で一休みしよう。", "log-ev");
-            state.dist = 10;
+            add("<span class='log-owen'>【オーエン】</span>「消え失せろ」 深部の闇が霧散した。", "log-owen");
+            st.dist = 10;
         } else if(type === 'eat') {
-            if(state.sweets > 0) { state.sweets--; state.o.m = state.o.mm; addLog("オーエンは菓子を咀嚼し、わずかに機嫌を直した。"); }
+            if(st.sw > 0) { st.sw--; st.o_m = st.o_mm; add("オーエンは菓子を頬張り、機嫌を戻した。"); }
         } else if(type === 'inn') {
-            state.tempInv.forEach(id => { state.globalInv[id] = (state.globalInv[id]||0)+1; });
-            state.tempInv = [];
-            state.c.h=state.c.mh; state.c.m=state.c.mm; state.o.m=state.o.mm;
-            state.sweets=3; state.dist=10;
-            
-            const m = MISSIONS[state.missionIdx];
-            if(m && (state.globalInv[m.target]||0) >= m.count) {
-                addLog(`【完了】主人が[${m.label}]を受け取った。`, "log-ev");
-                state.missionIdx++;
-            } else { addLog("宿屋に帰還。二人は静かに次の探索に備えた。"); }
+            st.tInv.forEach(id => { st.gInv[id] = (st.gInv[id]||0)+1; });
+            st.tInv = []; st.c_h=st.c_mh; st.c_m=st.c_mm; st.o_m=st.o_mm; st.sw=3; st.dist=10;
+            add("宿屋に帰還。カインは黙々と装備を磨いた。");
         }
-        updateUI();
+        ui();
     };
-
-    updateUI();
-    addLog("宿屋の主人：『古い銀貨を3枚、持ってきてくれ』", "log-sys");
+    ui();
+    add("主人の依頼：『古い銀貨を3枚、持ってきてくれ』", "log-sys");
 };
 </script>
 </body>
