@@ -3,18 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resonance: Final Conflict</title>
+    <title>Resonance RPG: Fixed Edition</title>
     <style>
         :root {
-            --bg: #08080a;
-            --panel: #121218;
-            --owen: #8e44ad;
+            --bg: #0a0a0c;
+            --panel: #16161d;
+            --owen: #9b59b6;
             --cain: #f1c40f;
             --hp-ok: #27ae60;
-            --hp-warn: #e67e22;
             --hp-danger: #c0392b;
-            --mp-color: #2980b9;
-            --text: #eceff1;
+            --text: #dcdde1;
         }
         body {
             background-color: var(--bg); color: var(--text);
@@ -23,16 +21,16 @@
         }
         #game-container {
             width: 480px; height: 750px; background: var(--panel);
-            border: 2px solid #2c3e50; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box;
+            border: 2px solid #333; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box;
         }
         .header-mission {
             background: rgba(192, 57, 43, 0.1); border: 1px solid var(--hp-danger);
-            padding: 10px; margin-bottom: 15px; text-align: center; color: #ff7675; font-weight: bold;
+            padding: 12px; margin-bottom: 15px; text-align: center; color: #ff7675; font-weight: bold;
         }
         .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        .char-sheet { background: #1c1c24; padding: 12px; border-radius: 4px; border: 1px solid #333; }
-        .gauge-wrap { background: #000; height: 12px; border-radius: 6px; margin: 4px 0 10px 0; overflow: hidden; border: 1px solid #444; }
-        .gauge-bar { height: 100%; transition: width 0.5s ease, background-color 0.3s; }
+        .char-sheet { background: #1f1f26; padding: 12px; border-radius: 4px; border: 1px solid #444; }
+        .gauge-wrap { background: #000; height: 12px; border-radius: 6px; margin: 4px 0 10px 0; overflow: hidden; border: 1px solid #222; }
+        .gauge-bar { height: 100%; transition: width 0.3s ease; }
         
         #log {
             flex-grow: 1; background: #000; border: 1px solid #222; padding: 15px;
@@ -40,21 +38,26 @@
         }
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         button {
-            background: #2d3436; color: white; border: 1px solid #444; padding: 12px 5px;
+            background: #25252b; color: white; border: 1px solid #555; padding: 12px 5px;
             cursor: pointer; font-size: 0.8rem; border-radius: 4px;
         }
-        button:hover:not(:disabled) { border-color: var(--cain); background: #3d4446; }
-        button:disabled { opacity: 0.15; cursor: not-allowed; }
+        button:hover:not(:disabled) { border-color: var(--cain); background: #35353f; }
+        button:disabled { opacity: 0.2; cursor: not-allowed; }
         
-        .owen-name { color: var(--owen); } .cain-name { color: var(--cain); }
-        .sys-log { color: #95a5a6; font-size: 0.8rem; font-style: italic; }
-        .boss-log { color: #ff7675; font-weight: bold; border-top: 1px solid #ff7675; margin-top: 5px; }
-        
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-        .danger-blink { animation: blink 0.8s infinite; }
+        .owen-name { color: var(--owen); font-weight: bold; }
+        .cain-name { color: var(--cain); font-weight: bold; }
+        .sys-log { color: #7f8c8d; font-size: 0.8rem; font-style: italic; border-left: 2px solid #444; padding-left: 8px; }
+        .danger { color: #ff4757; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <div class="header-mission"
+    <div class="header-mission" id="mission-info">ボス出現まで：残り 10 km</div>
+
+    <div class="status-grid">
+        <div class="char-sheet">
+            <div class="owen-name">オーエン</div>
+            <div style="font-size:0.7rem">HP <span id="o-hp-txt">80/80</span></div>
+            <div class="gauge-wrap"><div id="o-hp-bar" class="gauge-bar" style="background:var(--hp-ok); width:100%"></div></div>
+            <div style="font-size:0.7rem">MP <span id="o-mp-txt">120/120</span>
