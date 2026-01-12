@@ -3,46 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Resonance RPG -Focus on Mission-</title>
+    <title>Resonance RPG -Standard Layout-</title>
     <style>
         :root { --bg: #0a0a0c; --panel: #1a1a20; --owen: #9b59b6; --cain: #f1c40f; --hp: #e74c3c; --text: #dcdde1; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text); font-family: "Hiragino Mincho ProN", serif; margin: 0; padding: 10px; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* 1. ミッションインジケーター */
-        .mission-header { background: #000; border: 2px solid var(--cain); padding: 10px; border-radius: 4px; margin-bottom: 10px; text-align: center; flex-shrink: 0; }
+        /* 画面全体をスマホの高さに固定 */
+        body { 
+            background: var(--bg); color: var(--text); font-family: serif; 
+            margin: 0; padding: 10px; display: flex; flex-direction: column; 
+            height: 100vh; overflow: hidden; /* スクロールを禁止して枠内に収める */
+        }
+        
+        /* ミッション：最上部 */
+        .mission-header { 
+            background: #000; border: 2px solid var(--cain); padding: 8px; 
+            border-radius: 4px; margin-bottom: 8px; text-align: center; flex-shrink: 0; 
+        }
         #m-indicator { font-size: 14px; font-weight: bold; color: var(--cain); }
-        .m-status { font-size: 11px; margin-top: 4px; display: block; color: #fff; }
-        .achieved { background: var(--cain) !important; color: #000 !important; animation: blink 1.5s infinite; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .m-status { font-size: 11px; margin-top: 2px; color: #fff; }
+        .achieved { background: var(--cain) !important; color: #000 !important; }
 
-        /* 2. ステータス表示（オーエン非表示化） */
-        .status-area { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; flex-shrink: 0; }
+        /* ステータスエリア */
+        .status-area { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; flex-shrink: 0; }
         .owen-card { background: rgba(155, 89, 182, 0.1); border-left: 4px solid var(--owen); padding: 8px; border-radius: 4px; }
-        .cain-card { background: rgba(241, 196, 15, 0.1); border-left: 4px solid var(--cain); padding: 12px; border-radius: 4px; }
+        .cain-card { background: rgba(241, 196, 15, 0.1); border-left: 4px solid var(--cain); padding: 10px; border-radius: 4px; }
         
-        .char-label { font-size: 12px; font-weight: bold; margin-bottom: 4px; display: block; }
+        .char-label { font-size: 11px; font-weight: bold; margin-bottom: 2px; display: block; }
         .owen-narrative { font-size: 12px; font-style: italic; color: #bbb; }
-        .cain-stat-large { display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; font-family: monospace; }
+        .cain-stat-large { display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; }
         
-        .dist-info { text-align: right; font-size: 11px; color: #888; margin-top: 2px; }
-
-        .inv-bar { font-size: 11px; background: #222; padding: 6px; display: flex; justify-content: space-around; margin-bottom: 8px; border-radius: 4px; flex-shrink: 0; }
+        .dist-info { text-align: right; font-size: 11px; color: #ff7675; margin-top: 2px; }
+        .inv-bar { font-size: 10px; background: #222; padding: 5px; display: flex; justify-content: space-around; margin-bottom: 8px; border-radius: 4px; flex-shrink: 0; }
         
-        #log { background: #000; flex-grow: 1; overflow-y: auto; padding: 12px; font-size: 13px; line-height: 1.6; border: 1px solid #333; margin-bottom: 10px; border-radius: 4px; }
+        /* ログ：ここだけが可変（伸び縮み）する */
+        #log { 
+            background: #000; flex-grow: 1; overflow-y: auto; padding: 10px; 
+            font-size: 13px; line-height: 1.5; border: 1px solid #333; 
+            margin-bottom: 10px; border-radius: 4px; 
+        }
         .log-ev { color: #55efc4; } .log-dmg { color: #ff7675; font-weight: bold; } .log-sys { color: #888; font-size: 11px; }
 
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex-shrink: 0; padding-bottom: 10px; }
-        button { background: #2c3e50; color: #fff; border: 1px solid #444; padding: 10px 5px; border-radius: 6px; font-size: 13px; font-weight: bold; min-height: 54px; cursor: pointer; }
+        /* ボタン：最下部に固定 */
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex-shrink: 0; margin-bottom: 5px; }
+        button { 
+            background: #2c3e50; color: #fff; border: 1px solid #444; padding: 8px 4px; 
+            border-radius: 6px; font-size: 12px; font-weight: bold; min-height: 50px; cursor: pointer; 
+        }
         button:active { background: #1a252f; }
-        .sub { font-size: 10px; opacity: 0.7; display: block; font-weight: normal; }
+        .sub { font-size: 9px; opacity: 0.7; display: block; font-weight: normal; }
     </style>
 </head>
 <body>
 
     <div class="mission-header" id="m-box">
-        <span id="m-indicator">現在の目的：読み込み中...</span>
-        <span class="m-status" id="m-detail">進行状況: 0/0 (未達成)</span>
+        <span id="m-indicator">目的確認中...</span>
+        <span class="m-status" id="m-detail">進行状況: --</span>
     </div>
 
     <div class="status-area">
@@ -56,7 +72,7 @@
                 <span>HP <span id="c-h">--</span></span>
                 <span>MP <span id="c-m">--</span></span>
             </div>
-            <div class="dist-info">深部まで残り: <span id="dist-val">10</span>km</div>
+            <div class="dist-info">目的地まで: <span id="dist-val">10</span>km</div>
         </div>
     </div>
 
@@ -65,8 +81,8 @@
     <div id="log"></div>
 
     <div class="controls">
-        <button id="btn-safe">慎重に進む<span class="sub">1km進行 / リスク低</span></button>
-        <button id="btn-bold">大胆に進む<span class="sub">2km進行 / リスク高</span></button>
+        <button id="btn-safe">慎重に進む<span class="sub">1km進行 / 消費小</span></button>
+        <button id="btn-bold">大胆に進む<span class="sub">2km進行 / 消費大</span></button>
         <button id="btn-eat">甘味消費<span class="sub">オーエンを宥める</span></button>
         <button id="btn-inn">宿屋に戻る<span class="sub">精算・距離リセット</span></button>
     </div>
@@ -84,13 +100,7 @@ window.onload = function() {
         globalInv: {}, tempInv: [], sweets: 3, missionIdx: 0, dist: 10
     };
 
-    const owenMoods = [
-        "不機嫌そうに爪を眺めている。",
-        "カインの足取りを冷ややかな目で見ている。",
-        "退屈そうに指先で小さな火を転がしている。",
-        "周囲の闇に視線を走らせ、鼻で笑った。",
-        "カインの傷口を眺め、口角をわずかに上げた。"
-    ];
+    const owenMoods = ["不機嫌そうに爪を眺めている。", "カインの足取りを冷ややかに見ている。", "指先で小さな火を転がしている。", "周囲の闇を睨み、鼻で笑った。"];
 
     const logEl = document.getElementById('log');
     function addLog(m, c="") {
@@ -102,24 +112,23 @@ window.onload = function() {
     }
 
     function updateUI() {
-        // カインの表示
         document.getElementById('c-h').innerText = state.c.h;
         document.getElementById('c-m').innerText = state.c.m;
         document.getElementById('dist-val').innerText = state.dist;
         
-        // オーエンのナレーション
-        if(state.o.m < 30) document.getElementById('o-state').innerText = "ひどく退屈し、魔力が枯渇しかけている。";
+        // オーエンの機嫌
+        if(state.o.m < 30) document.getElementById('o-state').innerText = "魔力が枯渇し、ひどく苛立っている。";
         else document.getElementById('o-state').innerText = owenMoods[Math.floor(Math.random()*owenMoods.length)];
 
-        // ミッション
-        const m = MISSIONS[state.missionIdx] || {label:"完了", target:"", count:0};
+        // ミッション計算：倉庫(global) + 手荷物(temp)
+        const m = MISSIONS[state.missionIdx] || {label:"全依頼完了", target:"", count:0};
         const inG = state.globalInv[m.target] || 0;
         const inT = state.tempInv.filter(id => id === m.target).length;
         const total = inG + inT;
         
-        const isReady = total >= m.count;
-        document.getElementById('m-indicator').innerText = `現在の目的：${m.label}を${m.count}個持ち帰れ`;
-        document.getElementById('m-detail').innerText = `進行状況: ${total}/${m.count} (${isReady ? '達成：宿屋へ戻れ' : '未達成'})`;
+        const isReady = (m.target !== "" && total >= m.count);
+        document.getElementById('m-indicator').innerText = m.target ? `現在の目的：${m.label}を${m.count}個持ち帰れ` : "全ての依頼を達成した";
+        document.getElementById('m-detail').innerText = m.target ? `進行状況: ${total}/${m.count} (${isReady ? '達成：宿屋へ戻れ' : '未達成'})` : "探索を続けろ";
         
         if(isReady) document.getElementById('m-box').classList.add('achieved');
         else document.getElementById('m-box').classList.remove('achieved');
@@ -136,26 +145,27 @@ window.onload = function() {
             const isB = type === 'bold';
             state.dist = Math.max(0, state.dist - (isB ? 2 : 1));
             state.o.m = Math.max(0, state.o.m - (isB ? 20 : 8));
-            addLog(isB ? "オーエンが苛立ちを魔力に変えて突き進んだ。" : "カインが慎重に地鳴りを聞き分け、オーエンを導いた。");
+            addLog(isB ? "オーエンが最短距離を突き進んだ。" : "カインが周囲を警戒し道を作った。");
 
             if(Math.random() < 0.3) {
-                if(Math.random() < 0.5) { state.c.h -= 15; addLog("【因縁】カインがオーエンを庇い、不必要な傷を負った。", "log-ev"); }
-                else { state.o.m -= 15; addLog("【因縁】オーエンが退屈しのぎに魔法を暴発させた。", "log-ev"); }
+                if(Math.random() < 0.5) { state.c.h -= 15; addLog("【因縁】カインがオーエンを庇い、傷を負った。", "log-ev"); }
+                else { state.o.m -= 15; addLog("【因縁】オーエンが退屈しのぎに魔法を浪費した。", "log-ev"); }
             }
 
             if(Math.random() < (isB ? 0.6 : 0.3)) {
                 state.c.h -= isB ? 30 : 15;
-                addLog("魔物の影がカインを襲う。彼は無言で衝撃を受け止めた。", "log-dmg");
+                addLog("敵の攻撃。カインが無言で衝撃を受け止めた。", "log-dmg");
                 if(state.c.h <= 0) {
-                    addLog("【探索失敗】カインが倒れ、オーエンは全てを捨てて撤退した。", "log-dmg");
+                    addLog("【探索失敗】カインが倒れ、全てを失って撤退した。", "log-dmg");
                     state.tempInv = []; state.dist = 10; state.c.h = 10;
                 } else {
                     const keys = Object.keys(MASTER_ITEMS);
                     const loot = keys[Math.floor(Math.random()*keys.length)];
                     state.tempInv.push(loot);
-                    addLog(`戦利品：[${MASTER_ITEMS[loot]}]を回収。`, "log-sys");
+                    addLog(`[${MASTER_ITEMS[loot]}]を回収。`, "log-sys");
                 }
             }
+            if(state.dist === 0) addLog("目的地に到達。更なる深部へ続く道が見える。", "log-ev");
         } else if(type === 'eat') {
             if(state.sweets > 0) { state.sweets--; state.o.m = state.o.mm; addLog("オーエンは菓子を咀嚼し、わずかに機嫌を直した。"); }
         } else if(type === 'inn') {
@@ -165,9 +175,9 @@ window.onload = function() {
             
             const m = MISSIONS[state.missionIdx];
             if(m && (state.globalInv[m.target]||0) >= m.count) {
-                addLog(`【ミッション完了】宿屋の主人が[${m.label}]を満足そうに受け取った。`, "log-ev");
+                addLog(`【完了】宿屋の主人が[${m.label}]を受け取った。`, "log-ev");
                 state.missionIdx++;
-            } else { addLog("宿屋の静寂。カインは装備を整え、オーエンは窓の外を眺めている。"); }
+            } else { addLog("宿屋に帰還。カインは装備を整え、オーエンは窓の外を眺めた。"); }
         }
         updateUI();
     }
@@ -178,7 +188,7 @@ window.onload = function() {
     document.getElementById('btn-inn').onclick = () => handleAction('inn');
 
     updateUI();
-    addLog("宿屋の主人が言った。「古い銀貨を3枚、集めてきてくれ」。探索が始まる。");
+    addLog("主人が言った。「古い銀貨を3枚、持ってきてくれ」。");
 };
 </script>
 </body>
