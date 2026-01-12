@@ -3,49 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resonance in the Dark -Fixed-</title>
+    <title>Resonance in the Dark -Collection-</title>
     <style>
         :root {
-            --bg: #0a0a0e;
-            --panel: #16161d;
-            --owen: #9b59b6;
-            --cain: #f1c40f;
-            --hp-bar: #e74c3c;
-            --mp-bar: #3498db;
-            --text: #dcdde1;
+            --bg: #0a0a0e; --panel: #16161d; --owen: #9b59b6; --cain: #f1c40f;
+            --hp-bar: #e74c3c; --mp-bar: #3498db; --text: #dcdde1;
         }
         body {
-            background-color: var(--bg);
-            color: var(--text);
+            background-color: var(--bg); color: var(--text);
             font-family: 'Hiragino Mincho ProN', serif;
             margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh;
         }
         #game-container {
-            width: 480px; height: 720px; background: var(--panel);
+            width: 480px; height: 750px; background: var(--panel);
             border: 2px solid #333; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box;
-            box-shadow: 0 0 30px rgba(0,0,0,0.7);
         }
         .mission-area {
             background: rgba(241, 196, 15, 0.1); border: 1px solid var(--cain);
-            padding: 12px; margin-bottom: 15px; text-align: center; color: var(--cain); font-weight: bold; font-size: 0.9rem;
-            box-shadow: inset 0 0 10px rgba(241, 196, 15, 0.2);
+            padding: 10px; margin-bottom: 15px; text-align: center; color: var(--cain); font-weight: bold; font-size: 0.9rem;
         }
-        .status-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .status-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px; }
         .char-card { background: #1f1f26; padding: 12px; border-radius: 4px; border: 1px solid #333; }
         .label { font-size: 0.75rem; margin-bottom: 5px; display: flex; justify-content: space-between; }
-        .gauge-container { background: #000; height: 10px; border-radius: 5px; margin-bottom: 8px; overflow: hidden; border: 1px solid #444; }
-        .gauge-fill { height: 100%; transition: width 0.4s ease-in-out; }
-        
+        .gauge-container { background: #000; height: 8px; border-radius: 4px; margin-bottom: 6px; overflow: hidden; border: 1px solid #444; }
+        .gauge-fill { height: 100%; transition: width 0.4s ease; }
         #log {
             flex-grow: 1; background: #050505; border: 1px solid #222; padding: 15px;
-            overflow-y: auto; font-size: 0.85rem; line-height: 1.8; margin-bottom: 15px;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+            overflow-y: auto; font-size: 0.82rem; line-height: 1.7; margin-bottom: 10px;
         }
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         button {
-            background: #25252b; color: white; border: 1px solid #444; padding: 12px 5px;
-            cursor: pointer; font-size: 0.8rem; border-radius: 4px; transition: 0.2s;
+            background: #25252b; color: white; border: 1px solid #444; padding: 10px 5px;
+            cursor: pointer; font-size: 0.8rem; border-radius: 4px;
         }
         button:hover:not(:disabled) { background: #35353f; border-color: var(--cain); }
-        button:disabled { opacity: 0.2; cursor: not-allowed; filter: grayscale(1); }
-        .item-count { font-size: 0.7rem; color: #888; }
+        button:disabled { opacity: 0.2; cursor: not-allowed; }
+        .owen-text { color: var(--owen); font-weight: bold; }
+        .cain-text { color: var(--cain); font-weight: bold; }
+        .event-text { color
