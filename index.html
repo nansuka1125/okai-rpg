@@ -3,233 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Twined Eyes Roguelike</title>
+    <title>Resonance in the Dark</title>
     <style>
         :root {
-            --bg-color: #0a0a0c;
-            --panel-color: #16161d;
-            --owen: #9b59b6;
+            --bg: #050505;
+            --panel: #121216;
+            --owen: #8e44ad;
             --cain: #f1c40f;
-            --mission: #2ecc71;
-            --text: #dcdde1;
+            --hp-bar: #c0392b;
+            --mp-bar: #2980b9;
+            --text: #cfd8dc;
         }
         body {
-            background-color: var(--bg-color);
+            background-color: var(--bg);
             color: var(--text);
             font-family: 'Hiragino Mincho ProN', serif;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh;
         }
         #game-container {
-            width: 480px;
-            height: 700px;
-            background: var(--panel-color);
-            border: 1px solid #333;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            box-sizing: border-box;
-            position: relative;
+            width: 480px; height: 720px; background: var(--panel);
+            border: 2px solid #333; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box;
         }
-        .mission-panel {
-            background: rgba(46, 204, 113, 0.1);
-            border: 1px solid var(--mission);
-            padding: 10px;
-            margin-bottom: 15px;
-            font-size: 0.85rem;
-            text-align: center;
-            color: var(--mission);
+        .mission-area {
+            background: rgba(241, 196, 15, 0.1); border: 1px solid var(--cain);
+            padding: 10px; margin-bottom: 15px; text-align: center; color: var(--cain); font-weight: bold; font-size: 0.9rem;
         }
-        .party-status {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;
-        }
-        .char-box {
-            background: #20202a; padding: 10px; border-bottom: 3px solid #444; font-size: 0.8rem;
-        }
-        .char-box.owen { border-color: var(--owen); }
-        .char-box.cain { border-color: var(--cain); }
+        .status-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .char-card { background: #1a1a20; padding: 10px; border-radius: 4px; }
+        .label { font-size: 0.75rem; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .gauge-container { background: #333; height: 8px; border-radius: 4px; margin-bottom: 8px; overflow: hidden; }
+        .gauge-fill { height: 100%; transition: width 0.3s ease; }
         
         #log {
-            flex-grow: 1; background: #000; border: 1px solid #222;
-            padding: 12px; overflow-y: auto; font-size: 0.85rem;
-            line-height: 1.7; margin-bottom: 15px;
+            flex-grow: 1; background: #000; border: 1px solid #222; padding: 12px;
+            overflow-y: auto; font-size: 0.85rem; line-height: 1.8; margin-bottom: 15px;
         }
-        .controls {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-        }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         button {
-            background: #2d3436; color: white; border: 1px solid #444;
-            padding: 10px 5px; cursor: pointer; font-size: 0.75rem;
+            background: #2c3e50; color: white; border: 1px solid #444; padding: 12px 5px;
+            cursor: pointer; font-size: 0.8rem; border-radius: 2px;
         }
-        button:hover:not(:disabled) { border-color: var(--text); background: #3d4446; }
-        button:disabled { opacity: 0.3; }
-
-        .log-env { color: #95a5a6; } /* 環境 */
-        .log-soc { color: #f39c12; } /* 交流 */
-        .log-fate { color: #e74c3c; font-weight: bold; } /* 因縁 */
-        .log-sys { color: var(--mission); font-size: 0.8rem; }
+        button:hover:not(:disabled) { background: #34495e; border-color: var(--cain); }
+        button:disabled { opacity: 0.2; cursor: not-allowed; }
+        .item-count { font-size: 0.7rem; color: #aaa; }
+        
+        .owen-text { color: var(--owen); }
+        .cain-text { color: var(--cain); }
+        .sys-text { color: #7f8c8d; font-size: 0.8rem; }
+        .danger { color: #e74c3c; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <div class="mission-panel">
-        MISSION: <span id="mission-desc">輝く鱗を5個集めて帰還せよ</span> 
-        (<span id="mission-count">0</span>/5)
+    <div class="mission-area" id="mission-display">
+        目的: 素材を10個集めて帰還せよ (0/10)
     </div>
 
-    <div class="header" style="display:flex; justify-content: space-between; font-size:0.7rem; margin-bottom:5px;">
-        <span id="location">薄暗い路地裏</span>
-        <span>所持素材: <span id="mats-total">0</span></span>
-    </div>
-
-    <div class="party-status">
-        <div class="char-box owen">
-            <div style="color:var(--owen)">オーエン</div>
-            HP: <span id="o-hp">80</span> | MP: <span id="o-mp">120</span>
-        </div>
-        <div class="char-box cain">
-            <div style="color:var(--cain)">カイン</div>
-            HP: <span id="c-hp">120</span> | MP: <span id="c-mp">50</span>
-        </div>
-    </div>
-
-    <div id="log"></div>
-
-    <div class="controls">
-        <button onclick="explore('safe')">慎重に進む<br>(カインの察知)</button>
-        <button onclick="explore('bold')">大胆に進む<br>(オーエンの進軍)</button>
-        <button onclick="rest()">宿屋に戻る</button>
-        <button onclick="upgrade()">武器強化</button>
-        <button style="grid-column: span 2;" onclick="eat()">オーエンに甘味を与える</button>
-    </div>
-</div>
-
-<script>
-    const state = {
-        owen: { hp: 80, mp: 120, maxMp: 120 },
-        cain: { hp: 120, mp: 50, maxMp: 50 },
-        mats: 0,
-        missionTarget: 5,
-        missionCurrent: 0,
-        locIdx: 0,
-        wepLv: 1
-    };
-
-    const locations = ["薄暗い路地裏", "静まり返った広場", "霧深い裏道", "不気味な魔力の溜まり場"];
-    const prefixes = ["寂しがり屋の", "眩耀の", "不機嫌な", "孤高の", "血塗られた"];
-    
-    // イベントデータベース
-    const events = {
-        env: [
-            "深い霧が立ち込める。カインはオーエンの肩に触れ、その感触だけを頼りに歩を進めた。",
-            "崩れた壁の隙間。カインには何も見えないが、オーエンが「ゴミがあるよ」と鼻で笑いながら彼の手を引く。",
-            "冷たい風が吹く。オーエンはカインの外套を無言で掴み、風避けにするように後ろを歩いた。"
-        ],
-        soc: [
-            "街の女がカインに花を差し出した。オーエンはそれを奪い取ると、一瞬で黒い灰に変えて捨てた。",
-            "通りすがりの騎士がカインに敬礼する。オーエンは隣で「誰に頭を下げているんだか」と呪詛を吐く。",
-            "子供たちがカインに駆け寄る。オーエンが指先で小さな爆発を起こすと、子供たちは泣きながら逃げ出した。"
-        ],
-        fate: [
-            "オーエンが自身の金の瞳を擦る。それはかつて、カインの顔に収まっていたものだ。",
-            "カインの紅い左目が疼く。オーエンの魔力に反応し、視えないはずの景色が一瞬だけ赤く染まった。",
-            "「返せよ」とオーエンが囁く。何のことかは明白だが、カインはただ誠実に微笑むだけだった。"
-        ]
-    };
-
-    const logEl = document.getElementById('log');
-
-    function addLog(text, cls = "") {
-        const p = document.createElement('div');
-        p.className = cls;
-        p.innerHTML = text;
-        logEl.appendChild(p);
-        logEl.scrollTop = logEl.scrollHeight;
-    }
-
-    function updateUI() {
-        document.getElementById('o-hp').innerText = state.owen.hp;
-        document.getElementById('o-mp').innerText = state.owen.mp;
-        document.getElementById('c-hp').innerText = state.cain.hp;
-        document.getElementById('c-mp').innerText = state.cain.mp;
-        document.getElementById('mats-total').innerText = state.mats;
-        document.getElementById('mission-count').innerText = state.missionCurrent;
-        document.getElementById('location').innerText = locations[state.locIdx];
-    }
-
-    async function explore(mode) {
-        if(state.owen.hp <= 1) return;
-        
-        state.locIdx = Math.floor(Math.random() * locations.length);
-        let encounterRate = mode === 'safe' ? 0.3 : 0.7;
-        let matGain = mode === 'safe' ? 1 : 2;
-
-        if(mode === 'safe') {
-            addLog("カインが周囲の気配を慎重に探り、安全なルートを選択する。", "log-env");
-            state.cain.mp = Math.max(0, state.cain.mp - 5);
-        } else {
-            addLog("オーエンが苛立ちと共に魔力を撒き散らし、最短距離を強引に進む。", "log-env");
-            state.owen.mp = Math.max(0, state.owen.mp - 10);
-        }
-
-        // ランダムイベント
-        const rand = Math.random();
-        if(rand < 0.4) {
-            const type = rand < 0.15 ? 'fate' : (rand < 0.25 ? 'soc' : 'env');
-            const pool = events[type];
-            addLog(pool[Math.floor(Math.random() * pool.length)], `log-${type}`);
-        }
-
-        // 戦闘判定
-        if(Math.random() < encounterRate) {
-            addLog("厄災の残滓と遭遇。カインが盾となり、オーエンの魔術が爆ぜる！", "log-sys");
-            state.cain.hp -= 15;
-            state.missionCurrent = Math.min(state.missionTarget, state.missionCurrent + matGain);
-            state.mats += matGain;
-        }
-        updateUI();
-    }
-
-    function rest() {
-        addLog("宿屋に帰還した。");
-        if(state.missionCurrent >= state.missionTarget) {
-            addLog("【ミッション達成】カインが丁寧に素材を納品し、多額の報奨を得た！", "log-sys");
-            state.mats += 10;
-            state.missionCurrent = 0;
-            // 宿屋での交流（指示3）
-            addLog("カインが宿の看板娘に囲まれ、土産話をせがまれている。オーエンはカインの靴をこっそり床に縫い付けた。", "log-soc");
-        }
-        state.owen.hp = 80; state.owen.mp = 120;
-        state.cain.hp = 120; state.cain.mp = 50;
-        updateUI();
-    }
-
-    function eat() {
-        addLog("オーエンに特製のベリータルトを与えた。");
-        addLog("「……悪くない」オーエンの魔力が完全に回復した。", "log-owen");
-        state.owen.mp = state.owen.maxMp;
-        updateUI();
-    }
-
-    function upgrade() {
-        if(state.mats >= 5) {
-            state.mats -= 5;
-            state.wepLv++;
-            const p = prefixes[Math.floor(Math.random() * prefixes.length)];
-            addLog(`武器強化：${p}剣+${state.wepLv}`, "log-sys");
-            updateUI();
-        } else {
-            addLog("素材が足りません。");
-        }
-    }
-
-    updateUI();
-    addLog("静かな夜、二人の探索が始まる。");
-</script>
-
-</body>
-</html>
+    <div class="status-section">
+        <div class="char-card">
+            <div class="label" style="color:var(--owen)">
