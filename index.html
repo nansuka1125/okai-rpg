@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resonance in the Dark</title>
+    <title>Resonance in the Dark -Complete-</title>
     <style>
         :root {
-            --bg: #050505;
-            --panel: #121216;
-            --owen: #8e44ad;
+            --bg: #0a0a0e;
+            --panel: #16161d;
+            --owen: #9b59b6;
             --cain: #f1c40f;
-            --hp-bar: #c0392b;
-            --mp-bar: #2980b9;
-            --text: #cfd8dc;
+            --hp-bar: #e74c3c;
+            --mp-bar: #3498db;
+            --text: #dcdde1;
         }
         body {
             background-color: var(--bg);
@@ -23,34 +23,37 @@
         #game-container {
             width: 480px; height: 720px; background: var(--panel);
             border: 2px solid #333; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box;
+            box-shadow: 0 0 30px rgba(0,0,0,0.7);
         }
         .mission-area {
             background: rgba(241, 196, 15, 0.1); border: 1px solid var(--cain);
-            padding: 10px; margin-bottom: 15px; text-align: center; color: var(--cain); font-weight: bold; font-size: 0.9rem;
+            padding: 12px; margin-bottom: 15px; text-align: center; color: var(--cain); font-weight: bold; font-size: 0.9rem;
+            box-shadow: inset 0 0 10px rgba(241, 196, 15, 0.2);
         }
         .status-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        .char-card { background: #1a1a20; padding: 10px; border-radius: 4px; }
+        .char-card { background: #1f1f26; padding: 12px; border-radius: 4px; border: 1px solid #333; }
         .label { font-size: 0.75rem; margin-bottom: 5px; display: flex; justify-content: space-between; }
-        .gauge-container { background: #333; height: 8px; border-radius: 4px; margin-bottom: 8px; overflow: hidden; }
-        .gauge-fill { height: 100%; transition: width 0.3s ease; }
+        .gauge-container { background: #000; height: 10px; border-radius: 5px; margin-bottom: 8px; overflow: hidden; border: 1px solid #444; }
+        .gauge-fill { height: 100%; transition: width 0.4s ease-in-out; }
         
         #log {
-            flex-grow: 1; background: #000; border: 1px solid #222; padding: 12px;
+            flex-grow: 1; background: #050505; border: 1px solid #222; padding: 15px;
             overflow-y: auto; font-size: 0.85rem; line-height: 1.8; margin-bottom: 15px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
         }
         .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         button {
-            background: #2c3e50; color: white; border: 1px solid #444; padding: 12px 5px;
-            cursor: pointer; font-size: 0.8rem; border-radius: 2px;
+            background: #25252b; color: white; border: 1px solid #444; padding: 12px 5px;
+            cursor: pointer; font-size: 0.8rem; border-radius: 4px; transition: 0.2s;
         }
-        button:hover:not(:disabled) { background: #34495e; border-color: var(--cain); }
-        button:disabled { opacity: 0.2; cursor: not-allowed; }
-        .item-count { font-size: 0.7rem; color: #aaa; }
+        button:hover:not(:disabled) { background: #35353f; border-color: var(--cain); }
+        button:disabled { opacity: 0.2; cursor: not-allowed; filter: grayscale(1); }
+        .item-count { font-size: 0.7rem; color: #888; }
         
-        .owen-text { color: var(--owen); }
-        .cain-text { color: var(--cain); }
-        .sys-text { color: #7f8c8d; font-size: 0.8rem; }
-        .danger { color: #e74c3c; font-weight: bold; }
+        .owen-text { color: var(--owen); font-weight: bold; }
+        .cain-text { color: var(--cain); font-weight: bold; }
+        .sys-text { color: #95a5a6; font-size: 0.8rem; border-left: 2px solid #444; padding-left: 8px; margin: 5px 0; }
+        .danger { color: #ff4757; font-weight: bold; background: rgba(255, 71, 87, 0.1); padding: 2px 5px; }
     </style>
 </head>
 <body>
@@ -62,14 +65,14 @@
 
     <div class="status-section">
         <div class="char-card">
-            <div class="label" style="color:var(--owen)"><span>オーエン</span></div>
+            <div class="label"><span class="owen-text">オーエン</span></div>
             <div class="label"><span>HP</span><span id="o-hp-val">80/80</span></div>
             <div class="gauge-container"><div id="o-hp-bar" class="gauge-fill" style="background:var(--hp-bar); width:100%"></div></div>
             <div class="label"><span>MP</span><span id="o-mp-val">120/120</span></div>
             <div class="gauge-container"><div id="o-mp-bar" class="gauge-fill" style="background:var(--mp-bar); width:100%"></div></div>
         </div>
         <div class="char-card">
-            <div class="label" style="color:var(--cain)"><span>カイン</span></div>
+            <div class="label"><span class="cain-text">カイン</span></div>
             <div class="label"><span>HP</span><span id="c-hp-val">120/120</span></div>
             <div class="gauge-container"><div id="c-hp-bar" class="gauge-fill" style="background:var(--hp-bar); width:100%"></div></div>
             <div class="label"><span>MP</span><span id="c-mp-val">50/50</span></div>
@@ -77,144 +80,19 @@
         </div>
     </div>
 
-    <div style="font-size: 0.75rem; margin-bottom: 10px; display: flex; justify-content: space-between;">
-        <span>所持素材: <b id="mats-val">0</b></span>
-        <span>探索中の獲得: <b id="session-mats-val">0</b></span>
+    <div style="font-size: 0.75rem; margin-bottom: 10px; display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding-bottom: 5px;">
+        <span>拠点備蓄素材: <b id="mats-val" style="color:var(--cain)">0</b></span>
+        <span>現在の獲得量: <b id="session-mats-val" style="color:var(--owen)">0</b></span>
     </div>
 
     <div id="log"></div>
 
     <div class="controls">
-        <button id="btn-safe" onclick="action('safe')">慎重に進む<br><span class="sys-text">MP(小)消費 / 低遭遇</span></button>
-        <button id="btn-bold" onclick="action('bold')">大胆に進む<br><span class="sys-text">MP(大)消費 / 高遭遇</span></button>
-        <button id="btn-eat" onclick="action('eat')">甘味を与える<br><span class="item-count">残り: <span id="sweets-val">3</span>個</span></button>
-        <button id="btn-rest" onclick="action('rest')">宿屋で休む<br><span class="sys-text">素材5を消費</span></button>
+        <button id="btn-safe" onclick="action('safe')">慎重に進む<br><span class="item-count">低リスク / 素材(小)</span></button>
+        <button id="btn-bold" onclick="action('bold')">大胆に進む<br><span class="item-count">高リスク / 素材(大)</span></button>
+        <button id="btn-eat" onclick="action('eat')">甘味を与える<br><span class="item-count">所持数: <span id="sweets-val">3</span></span></button>
+        <button id="btn-rest" onclick="action('rest')">宿屋に戻る<br><span class="item-count">素材 5 消費</span></button>
     </div>
 </div>
 
-<script>
-    const state = {
-        o: { hp: 80, mhp: 80, mp: 120, mmp: 120 },
-        c: { hp: 120, mhp: 120, mp: 50, mmp: 50 },
-        mats: 0,
-        sessionMats: 0,
-        sweets: 3,
-        target: 10,
-        isDead: false
-    };
-
-    const narrations = {
-        env: [
-            "深い霧の中、カインがオーエンの手首を掴み、自身の視界を補うように先を急いだ。",
-            "崩落した天井。カインには闇しか見えないが、オーエンがその背を強く押し、瓦礫を回避させた。",
-            "カインの紅い左目が鈍く光り、隣を歩くオーエンの魔力の輪郭だけを鮮明に捉えた。"
-        ],
-        soc: [
-            "宿の女がカインの腕に触れようとした瞬間、オーエンがその間に不可視の障壁を張り、冷ややかに鼻で笑った。",
-            "カインの誠実な振る舞いに周囲が湧き立つが、オーエンはカインの影を踏みつけ、その動きを封じて愉悦に浸っている。",
-            "贈られた花束をカインが受け取ろうとする前に、オーエンがそれを不気味な色の毒蛇に変身させた。"
-        ],
-        fate: [
-            "オーエンが自身の金の右目に触れる。それはかつて、カインの顔に収まっていた宝石だ。",
-            "カインは痛む左目を押さえ、存在しないはずの視界の隅で笑うオーエンの幻影を見つめた。",
-            "奪い奪われた過去を反芻するように、オーエンはカインの首筋に冷たい指先を這わせた。"
-        ]
-    };
-
-    const logEl = document.getElementById('log');
-
-    function addLog(msg, cls="") {
-        const d = document.createElement('div');
-        d.className = cls;
-        d.innerHTML = msg;
-        logEl.appendChild(d);
-        logEl.scrollTop = logEl.scrollHeight;
-    }
-
-    function updateUI() {
-        // Bars
-        document.getElementById('o-hp-bar').style.width = (state.o.hp/state.o.mhp*100) + "%";
-        document.getElementById('o-mp-bar').style.width = (state.o.mp/state.o.mmp*100) + "%";
-        document.getElementById('c-hp-bar').style.width = (state.c.hp/state.c.mhp*100) + "%";
-        document.getElementById('c-mp-bar').style.width = (state.c.mp/state.c.mmp*100) + "%";
-        // Values
-        document.getElementById('o-hp-val').innerText = `${state.o.hp}/${state.o.mhp}`;
-        document.getElementById('o-mp-val').innerText = `${state.o.mp}/${state.o.mmp}`;
-        document.getElementById('c-hp-val').innerText = `${state.c.hp}/${state.c.mhp}`;
-        document.getElementById('c-mp-val').innerText = `${state.c.mp}/${state.c.mmp}`;
-        document.getElementById('mats-val').innerText = state.mats;
-        document.getElementById('session-mats-val').innerText = state.sessionMats;
-        document.getElementById('sweets-val').innerText = state.sweets;
-        document.getElementById('mission-display').innerText = `目的: 素材を10個集めて帰還せよ (${state.sessionMats}/10)`;
-        
-        // Disable buttons if dead
-        document.getElementById('btn-rest').disabled = state.mats < 5;
-        document.getElementById('btn-eat').disabled = state.sweets <= 0;
-    }
-
-    async function action(type) {
-        if(type === 'safe' || type === 'bold') {
-            const isBold = type === 'bold';
-            // MP Cost
-            state.o.mp = Math.max(0, state.o.mp - (isBold ? 20 : 5));
-            state.c.mp = Math.max(0, state.c.mp - (isBold ? 10 : 2));
-            
-            addLog(isBold ? "オーエンが周囲を威圧しながら強引に進む。" : "カインが慎重に足場を確かめ、安全を確保する。");
-
-            // Event
-            const r = Math.random();
-            if(r < 0.3) {
-                const pool = r < 0.1 ? narrations.fate : (r < 0.2 ? narrations.soc : narrations.env);
-                addLog(pool[Math.floor(Math.random()*pool.length)], "sys-text");
-            }
-
-            // Battle
-            if(Math.random() < (isBold ? 0.7 : 0.25)) {
-                const dmg = isBold ? 30 : 15;
-                state.c.hp -= dmg;
-                addLog(`厄災の残滓の激しい攻撃。カインがオーエンの前に立ち、盾となって衝撃を耐え凌ぐ。`, "danger");
-                if(state.c.hp <= 0) {
-                    gameOver();
-                    return;
-                }
-                const gain = isBold ? 3 : 1;
-                state.sessionMats += gain;
-                addLog(`敵を退け、素材を${gain}個回収した。`, "sys-text");
-            }
-        } 
-        else if(type === 'eat') {
-            state.sweets--;
-            state.o.mp = state.o.mmp;
-            addLog("オーエンが差し出された菓子を奪い取り、不機嫌そうに咀嚼して魔力を回復させた。", "owen-text");
-        }
-        else if(type === 'rest') {
-            state.mats -= 5;
-            state.mats += state.sessionMats;
-            const clear = state.sessionMats >= 10;
-            state.sessionMats = 0;
-            state.o.hp = state.o.mhp; state.o.mp = state.o.mmp;
-            state.c.hp = state.c.mhp; state.c.mp = state.c.mmp;
-            state.sweets = 3;
-            addLog("宿屋の安息。カインは装備を整え、オーエンは独り静かに窓の外を眺めている。");
-            if(clear) addLog("【目的達成】十分な素材を持ち帰り、二人は一時的な平穏を得た。", "cain-text");
-            addLog("カインが給仕に親しく話しかけられている。オーエンはその光景を忌々しそうに見つめ、カインの靴紐を魔法で固く結び合わせた。", "sys-text");
-        }
-        updateUI();
-    }
-
-    function gameOver() {
-        addLog("カインが膝をつき、意識を失う。オーエンは舌打ちを漏らし、倒れたカインの襟を掴んで強引にその場を離脱した。", "danger");
-        addLog("探索失敗。獲得していた素材はすべて紛失した。", "danger");
-        state.sessionMats = 0;
-        state.o.hp = state.o.mhp; state.o.mp = state.o.mmp;
-        state.c.hp = 10; state.c.mp = state.c.mmp;
-        state.sweets = 0;
-        updateUI();
-    }
-
-    addLog("重い沈黙の中、二人の探索が始まる。");
-    updateUI();
-</script>
-
-</body>
-</html>
+<script
