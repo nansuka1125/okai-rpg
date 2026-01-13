@@ -135,6 +135,7 @@ async function battle(isBoss = false) {
     updateUI();
 }
 
+// --- ここから差し替え ---
 window.act = function(type, arg) {
     if(type === 'move') {
         if(st.owenAbsent > 0) st.owenAbsent--;
@@ -166,8 +167,9 @@ window.act = function(type, arg) {
                 else updateUI();
             } else updateUI();
         } else updateUI();
-    } else if(type === 'boss') battle(true);
-    else if(type === 'inn') {
+    } else if(type === 'boss') {
+        battle(true);
+    } else if(type === 'inn') {
         addLog("【宿屋】一晩休息した。");
         if(st.defeatLast) addLog(`<span class='log-owen'>オーエン「${getQuote('INN_DEFEAT')}」</span>`);
         else if(st.owenKills > st.kainKills * 2 && st.owenKills > 0) {
@@ -183,14 +185,26 @@ window.act = function(type, arg) {
     } else if(type === 'shop_atk') {
         if(st.gInv >= 3) { st.gInv -= 3; st.atk += 2; toggleModal(false); updateUI(); }
     } else if(type === 'report') {
-        st.inEvent = true; st.gInv -= (st.stage === 1 ? 3 : 5); updateUI();
-        addLog("【任務完了】", "log-sys");
-        setTimeout(() => { addLog("カイン「……なんとか終わったか」"); document.getElementById('btn-next').style.display = "block"; }, 800);
+        // --- ここが今回の会話修正ポイント ---
+        st.inEvent = true; 
+        st.gInv -= (st.stage === 1 ? 3 : 5); 
+        updateUI();
+        addLog("【その夜】", "log-sys");
+        setTimeout(() => { addLog("カイン「……なんとか終わったか」"); }, 800);
+        setTimeout(() => { addLog(`<span class='log-owen'>オーエン「こんな序盤で何やってるの？弱すぎじゃない？」</span>`); }, 1800);
+        setTimeout(() => { addLog("カイン「それはおまえが……いや、いい」"); }, 2800);
+        setTimeout(() => { addLog(`<span class='log-owen'>オーエン「次は街にしようよ。ケーキ屋があるところがいい」</span>`); }, 3800);
+        setTimeout(() => { addLog("カイン「……もし、ケーキ屋がなかったら？」"); }, 4800);
+        setTimeout(() => { 
+            addLog(`<span class='log-owen'>オーエン「……決まってるだろ？」</span>`);
+            document.getElementById('btn-next').style.display = "block";
+        }, 5800);
     } else if(type === 'next_stage') {
         st.stage++; st.max_dist += 5; st.dist = st.max_dist; st.enemyMul += 0.2;
         st.inEvent = false; document.getElementById('btn-next').style.display = "none";
         addLog(`【第${st.stage}章】開始。`, "log-sys"); updateUI();
     }
 };
+// --- ここまで差し替え ---
 
 window.onload = updateUI;
