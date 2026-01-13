@@ -69,6 +69,7 @@ async function battle(isBoss = false) {
     let e_hp = enemy.hp * st.enemyMul;
     let freezeCount = 0;
     let turn = 0;
+    let lastHitter = 'kain';
     addLog(`${enemy.name}が現れた。`, "log-sys");
 
     while(e_hp > 0 && st.c_h > 0) {
@@ -78,33 +79,40 @@ async function battle(isBoss = false) {
 
         if(st.poison > 0) {
             st.c_h -= 7; addLog(`毒ダメージ：7`, "log-dmg");
-            if(Math.random() < 0.1) { addLog("オーエン「自分で治せよ」"); st.poison = 0; }
+            if(Math.random() < 0.1) { addLog("<span class='log-owen'>オーエン「……このくらい自分でなんとかできないの？」</span>"); st.poison = 0; }
         }
 
         if(st.owenAbsent <= 0 && freezeCount <= 0) {
             if(st.c_h / st.c_mh <= 0.4 && Math.random() < 0.1) {
-                e_hp = 0; addLog(`<span class='log-owen'>【オーエン】「消えろ」</span>`); break;
+                e_hp = 0; lastHitter = 'owen';
+                addLog(`<span class='log-owen'>【オーエンがトランクを開けた】「消えろ」</span>`); break;
             } else if(Math.random() < 0.15) {
-                freezeCount = 2; addLog(`<span class='log-owen'>オーエン「凍れよ」</span>`);
+                freezeCount = 2; 
+                addLog(`<span class='log-owen'>オーエン「……凍れよ」</span>`);
+                addLog(`《${enemy.name}が凍結状態になった》`, "log-sys");
             }
         }
 
         let hits = (st.lv >= 3 && Math.random() < 0.2) ? 2 : 1;
         for(let i=0; i<hits; i++) {
             let dmg = st.atk + Math.floor(Math.random()*5);
-            if(Math.random() < 0.1) { dmg = Math.floor(dmg * 1.5); addLog("【痛恨】鋭い一撃！", "log-atk"); }
+            if(Math.random() < 0.1) { dmg = Math.floor(dmg * 1.5); addLog("【痛恨】カインの鋭い一撃！", "log-atk"); }
             e_hp -= dmg; addLog(`カインの攻撃：${dmg}ダメージ`, "log-atk");
-            if(e_hp <= 0) break;
+            if(e_hp <= 0) { lastHitter = 'kain'; break; }
         }
         if(e_hp <= 0) break;
 
-        if(freezeCount > 0) { addLog(`${enemy.name}は凍っている`); freezeCount--; }
+        if(freezeCount > 0) { 
+            addLog(`${enemy.name}は凍っている`); 
+            freezeCount--;
+            if(freezeCount === 0) addLog(`《${enemy.name}の凍結が解除された》`, "log-sys");
+        }
         else {
             let e_dmg = Math.max(1, enemy.atk - st.def);
             st.c_h -= e_dmg; addLog(`${enemy.name}の反撃：${e_dmg}ダメージ`, "log-dmg");
-            if(Math.random() < enemy.poison) { st.poison = 1; addLog("毒を受けた！", "log-dmg"); }
+            if(Math.random() < enemy.poison) { st.poison = 1; addLog("カインは毒を受けた！", "log-dmg"); }
             if(st.c_h <= 0 && st.lv >= 5 && !st.fukutsuUsed && Math.random() < 0.3) {
-                st.c_h = 1; st.fukutsuUsed = true; addLog("【不屈】耐えた！", "log-atk");
+                st.c_h = 1; st.fukutsuUsed = true; addLog("【不屈】カインは踏みとどまった！", "log-atk");
             }
         }
         updateUI();
@@ -114,9 +122,14 @@ async function battle(isBoss = false) {
         st.owenPatience--; st.dist = st.max_dist; st.tInv = 0; st.c_h = 20; st.poison = 0;
         addLog(`<span class='log-owen'>オーエン「${getQuote('INN_DEFEAT')}」</span>`);
     } else if(e_hp <= 0) {
+        addLog(`《${enemy.name}を倒した！》`, "log-sys");
         st.exp += enemy.exp;
-        if(Math.random() < enemy.coin) { st.tInv++; addLog("銀貨を入手！"); }
-        if(st.exp >= st.lv * 40) { st.lv++; st.exp = 0; st.atk += 2; st.def += 1; st.c_h = st.c_mh; addLog(`LvUP: ${st.lv}`, "log-sys"); }
+        if(lastHitter === 'kain') {
+            if(Math.random() < enemy.coin) { st.tInv++; addLog("[古い銀貨]を入手！"); }
+        } else {
+            addLog("<b>【オーエンが倒してしまった】</b>", "log-sys");
+        }
+        if(st.exp >= st.lv * 40) { st.lv++; st.exp = 0; st.atk += 2; st.def += 1; st.c_h = st.c_mh; addLog(`【レベルアップ】Lv.${st.lv}`, "log-sys"); }
     }
     st.inCombat = false; st.fukutsuUsed = false; updateUI();
 }
@@ -128,39 +141,56 @@ window.act = function(type, arg) {
         if(arg === 'fwd') st.dist = Math.max(0, st.dist - move);
         else st.dist = Math.min(st.max_dist, st.dist + move);
         addLog(`${move}km移動。`);
-        if(st.poison > 0) { st.c_h -= 5; addLog("毒ダメージ：5", "log-dmg"); if(st.c_h < 1) st.c_h = 1; }
+        if(st.poison > 0) { st.c_h -= 5; addLog("毒が回っている……HP-5", "log-dmg"); if(st.c_h < 1) st.c_h = 1; }
         if(Math.random() < 0.45) battle(); else updateUI();
     } else if(type === 'inn') {
         if(st.owenPatience <= 0) {
             st.inEvent = true; document.body.style.background = "#000";
-            addLog("【任務放棄】オーエンは去った。"); return;
+            addLog("【バッドエンド：任務放棄】", "log-dmg");
+            addLog("いつのまにか宿屋は引き払われ、主人は怯え、娘の姿も消えている。");
+            addLog(`<span class='log-owen'>オーエン「帰るよ騎士様。…まだおまえには早かったんだよ。」</span>`); return;
         }
         const target = st.stage === 1 ? 3 : 5;
         if(st.gInv < target) {
             const ev = DATA.INN_SHORTAGE_EVENTS[Math.floor(Math.random()*DATA.INN_SHORTAGE_EVENTS.length)];
-            addLog(ev.text);
-        } else { addLog("一晩休息した。"); }
+            addLog("【宿屋・銀貨不足】", "log-sys"); addLog(ev.text);
+        } else { addLog("【宿屋】休息した。毒も消えたようだ。"); }
         st.gInv += st.tInv; st.tInv = 0; st.c_h = st.c_mh; st.poison = 0; updateUI();
     } else if(type === 'report') {
         st.inEvent = true; updateUI();
-        addLog("店主「感心だね」");
-        setTimeout(() => { document.getElementById('btn-next').style.display = "block"; }, 1000);
+        addLog("店主「おっ、ちゃんと持ってきたか。感心だね」", "log-sys");
+        setTimeout(() => addLog("【その夜】", "log-sys"), 1500);
+        setTimeout(() => addLog("カイン「……なんとか終わったか」"), 3000);
+        setTimeout(() => addLog(`<span class='log-owen'>オーエン「こんな序盤で何やってるの？弱すぎじゃない？」</span>`), 4500);
+        setTimeout(() => addLog("カイン「それはおまえが……いや、いい」"), 6000);
+        setTimeout(() => addLog(`<span class='log-owen'>オーエン「次は街にしようよ。ケーキ屋があるところがいい」</span>`), 7500);
+        setTimeout(() => addLog("カイン「……もし、ケーキ屋がなかったら？」"), 9000);
+        setTimeout(() => { 
+            addLog(`<span class='log-owen'>オーエン「……決まってるだろ？」</span>`);
+            document.getElementById('btn-next').style.display = "block";
+        }, 10500);
     } else if(type === 'use_hb' || type === 'use_sw') {
         const item = type === 'use_hb' ? 'herb' : 'sw';
         const heal = type === 'use_hb' ? 30 : 40;
         if(st[item] > 0) {
             st[item]--; st.c_h = Math.min(st.c_mh, st.c_h + heal); st.poison = 0;
-            addLog(`回復！毒が消えた。`); toggleModal(false); updateUI();
+            addLog(`${DATA.ITEMS[item].name}で回復！毒も消えた。`); toggleModal(false); updateUI();
         }
     } else if(type === 'boss') { battle(true); }
+    else if(type === 'next_stage') {
+        st.stage++; st.max_dist += 5; st.dist = st.max_dist; st.enemyMul += 0.2;
+        st.inEvent = false; document.getElementById('btn-next').style.display = "none";
+        addLog(`【第${st.stage}章】開始。`, "log-sys"); updateUI();
+    }
 };
 
 window.onload = () => {
     updateUI();
     st.inEvent = true;
     addLog("【宿屋の入り口】", "log-sys");
-    setTimeout(() => addLog("店主「おまえたち、宿代を払ってくれないかね。」"), 1000);
-    setTimeout(() => addLog("店主「銀貨3枚だ。でないと寝床はないよ」"), 2500);
-    setTimeout(() => addLog("カイン「……わかった」"), 4000);
-    setTimeout(() => { addLog("カイン「行くぞ」"); st.inEvent = false; updateUI(); }, 5500);
+    setTimeout(() => addLog("店主「おまえたち、そろそろ宿代を払ってくれないかね。」"), 1000);
+    setTimeout(() => addLog("店主「銀貨3枚、持ってきてくれ。……でないと今夜の寝床はないよ」"), 2500);
+    setTimeout(() => addLog("カイン「……わかった。すぐに行く」"), 4000);
+    setTimeout(() => addLog(`<span class='log-owen'>オーエン「えー、僕も？ 働き者の騎士様が一人でやればいいのに」</span>`), 5500);
+    setTimeout(() => { addLog("カイン「……行くぞ」"); st.inEvent = false; updateUI(); }, 7000);
 };
