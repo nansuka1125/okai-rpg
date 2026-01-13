@@ -4,7 +4,6 @@ let st = {
     gInv: 0, tInv: 0, herb: 0, sw: 3, 
     dist: 10, max_dist: 10, kainKills: 0, owenKills: 0, 
     inCombat: false, inEvent: false, enemyMul: 1.0, defeatLast: false,
-    // 追加イベント用の状態管理（これがないとエラーになります）
     owenAbsent: 0,    
     encountUp: false, 
     forceBattle: false 
@@ -84,7 +83,6 @@ async function battle(isBoss = false) {
         let neglect = false;
         const o_roll = Math.random();
         
-        // オーエン離脱中は介入なし
         if(st.owenAbsent <= 0 && o_roll < 0.1) {
             lastHitter = 'owen'; e_hp = 0;
             addLog(`<span class='log-owen'>【オーエンがトランクを開けた】「${getQuote('BATTLE_ASSIST')}」</span>`);
@@ -135,7 +133,6 @@ async function battle(isBoss = false) {
     updateUI();
 }
 
-// --- ここから差し替え ---
 window.act = function(type, arg) {
     if(type === 'move') {
         if(st.owenAbsent > 0) st.owenAbsent--;
@@ -178,33 +175,68 @@ window.act = function(type, arg) {
         } else addLog(`<span class='log-owen'>オーエン「${getQuote('INN_NORMAL')}」</span>`);
         st.gInv += st.tInv; st.tInv = 0; st.c_h = st.c_mh; 
         st.kainKills = 0; st.owenKills = 0; st.owenAbsent = 0; updateUI();
-    } else if(type === 'use_hb') {
+    } else if(type === 'use_herb') {
         if(st.herb > 0) { st.herb--; st.c_h = Math.min(st.c_mh, st.c_h + 30); toggleModal(false); updateUI(); }
     } else if(type === 'use_sw') {
         if(st.sw > 0) { st.sw--; st.c_h = Math.min(st.c_mh, st.c_h + 40); toggleModal(false); updateUI(); }
     } else if(type === 'shop_atk') {
         if(st.gInv >= 3) { st.gInv -= 3; st.atk += 2; toggleModal(false); updateUI(); }
     } else if(type === 'report') {
-        // --- ここが今回の会話修正ポイント ---
         st.inEvent = true; 
         st.gInv -= (st.stage === 1 ? 3 : 5); 
         updateUI();
-        addLog("【その夜】", "log-sys");
-        setTimeout(() => { addLog("カイン「……なんとか終わったか」"); }, 800);
-        setTimeout(() => { addLog(`<span class='log-owen'>オーエン「こんな序盤で何やってるの？弱すぎじゃない？」</span>`); }, 1800);
-        setTimeout(() => { addLog("カイン「それはおまえが……いや、いい」"); }, 2800);
-        setTimeout(() => { addLog(`<span class='log-owen'>オーエン「次は街にしようよ。ケーキ屋があるところがいい」</span>`); }, 3800);
-        setTimeout(() => { addLog("カイン「……もし、ケーキ屋がなかったら？」"); }, 4800);
+        
+        // 店主の反応を追加
+        addLog("店主「おっ、ちゃんと持ってきたか。感心だね」", "log-sys");
+
+        setTimeout(() => {
+            addLog("【その夜】", "log-sys");
+        }, 1000);
+
+        setTimeout(() => { addLog("カイン「……なんとか終わったか」"); }, 1800);
+        setTimeout(() => { addLog(`<span class='log-owen'>オーエン「こんな序盤で何やってるの？弱すぎじゃない？」</span>`); }, 2800);
+        setTimeout(() => { addLog("カイン「それはおまえが……いや、いい」"); }, 3800);
+        setTimeout(() => { addLog(`<span class='log-owen'>オーエン「次は街にしようよ。ケーキ屋があるところがいい」</span>`); }, 4800);
+        setTimeout(() => { addLog("カイン「……もし、ケーキ屋がなかったら？」"); }, 5800);
         setTimeout(() => { 
             addLog(`<span class='log-owen'>オーエン「……決まってるだろ？」</span>`);
             document.getElementById('btn-next').style.display = "block";
-        }, 5800);
+            // 内部フラグはまだイベント中のままにして、次章ボタンのみ押せるようにする
+        }, 6800);
     } else if(type === 'next_stage') {
         st.stage++; st.max_dist += 5; st.dist = st.max_dist; st.enemyMul += 0.2;
         st.inEvent = false; document.getElementById('btn-next').style.display = "none";
         addLog(`【第${st.stage}章】開始。`, "log-sys"); updateUI();
     }
 };
-// --- ここまで差し替え ---
 
-window.onload = updateUI;
+// 冒頭のストーリー開始演出を反映
+window.onload = () => {
+    updateUI();
+    
+    // ゲーム開始時の冒頭イベント
+    st.inEvent = true; // 操作を一時ロック
+    addLog("【宿屋の入り口】", "log-sys");
+    
+    setTimeout(() => {
+        addLog("店主「おまえたち、そろそろ宿代を払ってくれないかね。」");
+    }, 800);
+    
+    setTimeout(() => {
+        addLog("店主「銀貨3枚、持ってきてくれ。……でないと今夜の寝床はないよ」");
+    }, 2000);
+    
+    setTimeout(() => {
+        addLog("カイン「……わかった。すぐに行く」");
+    }, 3200);
+    
+    setTimeout(() => {
+        addLog(`<span class='log-owen'>オーエン「えー、僕も？ 働き者の騎士様が一人でやればいいのに」</span>`);
+    }, 4400);
+
+    setTimeout(() => {
+        addLog("カイン「……行くぞ」", "log-atk");
+        st.inEvent = false; // 操作ロック解除
+        updateUI();
+    }, 5600);
+};
