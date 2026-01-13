@@ -2,49 +2,43 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Resonance RPG</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>琥珀の旅路</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="game-container">
+        <div id="m-title" style="font-weight:bold; color:#f1c40f;">目的：銀貨を3枚持ち帰れ</div>
+        <div id="m-count" style="font-size:12px; margin-bottom:10px;">倉庫の蓄え: 0 / 3</div>
+        
+        <div id="c-lv">Lv.1 CAIN</div>
+        <div class="status-bar"><div id="h-fill" class="fill" style="width: 100%;"></div></div>
+        <div class="status-bar"><div id="m-fill" class="fill" style="width: 100%;"></div></div>
+        
+        <div id="dist-ui" style="font-size:12px; margin: 5px 0; color:#bdc3c7;">宿屋まで: 0km / 目的地まで: 10km</div>
+        
+        <div id="log"></div>
 
-    <div class="m-hdr">
-        <div id="m-title" style="font-weight:bold; color:var(--cain); font-size:14px;"></div>
-        <div id="m-count" style="font-size:11px;"></div>
-    </div>
-
-    <div class="st-bar">
-        <span class="c-lbl" id="c-lv"></span>
-        <div class="bar-wrap">
-            <div class="bg-b"><div id="h-fill"></div></div>
-            <div class="bg-b"><div id="m-fill"></div></div>
+        <div id="normal-btns" class="btn-grid">
+            <button onclick="act('move', 'fwd')">進む</button>
+            <button onclick="act('move', 'back')">戻る</button>
+            <button onclick="toggleModal(true)" style="grid-column: span 2;">アイテム / 強化</button>
         </div>
-    </div>
 
-    <div class="d-ui" id="dist-ui"></div>
-
-    <div id="log"></div>
-
-    <button id="btn-boss" onclick="act('boss')">深部に潜む影と対峙する</button>
-    <button id="btn-report" onclick="act('report')">店主に報告する</button>
-    <button id="btn-next" onclick="act('next_stage')">【次章へ進む】</button>
-    <button id="btn-inn" onclick="act('inn')">宿屋の暖簾を潜る</button>
-
-    <div class="btns" id="normal-btns">
-        <button onclick="act('move', 'fwd')">進む</button>
-        <button onclick="act('move', 'bwd')">戻る</button>
-        <button onclick="toggleModal(true)">アイテム / 強化</button>
+        <button id="btn-boss" style="display:none;" onclick="act('boss')">【目的地】探索する</button>
+        <button id="btn-inn" style="display:none;" onclick="act('inn')">宿屋の暖簾を潜る</button>
+        <button id="btn-report" style="display:none;" onclick="act('report')">店主に報告する</button>
+        <button id="btn-next" style="display:none;" onclick="act('next_stage')">【次章へ進む】</button>
     </div>
 
     <div id="modal">
         <div class="modal-content">
-            <h3 style="color:var(--cain); margin-bottom:15px; border-bottom:1px solid var(--cain);">所持アイテム</h3>
+            <h3 style="margin-top:0;">所持アイテム</h3>
             <div id="item-list"></div>
-            <div class="modal-actions">
-                <button id="use-herb" onclick="act('use_hb')">薬草を使う (HP+30)</button>
-                <button id="use-sw" onclick="act('use_sw')">甘味を食べる (HP+40)</button>
-                <button id="shop-atk" onclick="act('shop_atk')">武器を研ぐ (銀貨3消費: ATK+2)</button>
-                <button onclick="toggleModal(false)" class="btn-close">閉じる</button>
+            <div class="btn-grid" style="margin-top:15px;">
+                <button onclick="act('use_hb')">薬草</button>
+                <button onclick="act('use_sw')">甘味</button>
+                <button onclick="toggleModal(false)" style="grid-column: span 2; background:#7f8c8d;">閉じる</button>
             </div>
         </div>
     </div>
