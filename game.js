@@ -81,10 +81,10 @@ async function battle(isBoss = false) {
         
         if(o_roll < 0.1) {
             lastHitter = 'owen'; e_hp = 0;
-            addLog(`<span class='log-owen'>【オーエン介入】「${getQuote('BATTLE_ASSIST')}」</span>`);
+            addLog(`<span class='log-owen'>【オーエンがトランクを開けた】「${getQuote('BATTLE_ASSIST')}」</span>`);
             break;
         } else if(o_roll < 0.25) {
-            addLog("<span class='log-owen'>【冷淡な観測】</span>", "log-owen");
+            addLog("<span class='log-owen'>【オーエンは腕を組んで見ている】</span>", "log-owen");
             neglect = true;
         }
 
@@ -111,7 +111,7 @@ async function battle(isBoss = false) {
             if(Math.random() < 0.5) { st.tInv++; addLog("[戦利品]を入手。"); }
         } else {
             st.owenKills++;
-            addLog("<b>「【オーエンが倒してしまった】」</b>", "log-sys");
+            addLog("<b>【オーエンが倒してしまった】</b>", "log-sys");
             addLog(`<span class='log-owen'>オーエン「${getQuote(isBoss ? 'BATTLE_END_BOSS':'BATTLE_END_ZAKO')}」</span>`);
             if(Math.random() < 0.2) {
                 if(Math.random() < 0.5) addLog(`<span class='log-owen'>オーエン「${getQuote('KEEP_ITEM')}」</span>`);
