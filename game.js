@@ -186,7 +186,7 @@ async function battle(isBoss = false) {
     }
 
     if(st.c_h <= 0) {
-        st.owenPatience--; st.dist = st.max_dist; st.tInv = 0; st.c_h = 20; st.poison = 0;
+        st.owenPatience--; st.dist = st.max_dist; st.tInv = 0; st.c_h = 5; st.poison = 0;
         addLog(`<span class='log-owen'>オーエン「${getQuote('INN_DEFEAT')}」</span>`);
     } else if(e_hp <= 0) {
         addLog(`《${enemy.name}を倒した！》`, "log-sys");
