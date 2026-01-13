@@ -54,27 +54,22 @@ const updateUI = () => {
         const hpValues = document.getElementById('hp-values');
         if(!hFill || !hBar || !hpValues) return;
         
-        // 1. HP数値の更新
         hpValues.innerText = `${Math.max(0, Math.floor(st.c_h))} / ${st.c_mh}`;
 
-        // 2. 外枠(h-bar)の長さを最大HPに連動させる (成長の可視化)
         const baseWidth = 1.6; 
         hBar.style.width = (st.c_mh * baseWidth) + "px";
 
-        // 3. 塗りつぶし(h-fill)の割合
         const hpPercent = (st.c_h / st.c_mh) * 100;
         hFill.style.width = Math.max(0, hpPercent) + "%";
         
-        // 4. 色の変化（毒 > ピンチ(30%以下) > 通常）
         if (st.poison > 0) {
             hFill.style.backgroundColor = "#8e44ad"; 
         } else if (hpPercent <= 30) {
-            hFill.style.backgroundColor = "#f39c12"; // オレンジ寄り
+            hFill.style.backgroundColor = "#f39c12"; 
         } else {
             hFill.style.backgroundColor = "#e74c3c"; 
         }
         
-        // その他のUI
         document.getElementById('c-lv').innerText = `Lv.${st.lv} CAIN ${st.poison > 0 ? "[毒]" : ""}`;
         const target = st.stage === 1 ? 3 : 5;
         const totalCoin = st.gInv + st.tInv; 
@@ -122,6 +117,9 @@ async function battle(isBoss = false) {
         st.c_h -= e_dmg; triggerFlash();
         addLog(`${enemy.name}の攻撃：${e_dmg}ダメージ`, "log-dmg");
         updateUI();
+        if(st.c_h <= 0) { // 先制で倒れた場合
+            addLog("《カインは敗北した…》", "log-sys");
+        }
     }
 
     while(e_hp > 0 && st.c_h > 0) {
@@ -133,7 +131,10 @@ async function battle(isBoss = false) {
                 addLog(`<span class='log-owen'>オーエン「${getQuote('HEAL_POISON')}」</span>`); 
                 st.poison = 0; 
             }
-            if(st.c_h <= 0) break;
+            if(st.c_h <= 0) {
+                addLog("《カインは敗北した…》", "log-sys");
+                break;
+            }
         }
 
         const enemyFirst = Math.random() < 0.5;
@@ -143,7 +144,10 @@ async function battle(isBoss = false) {
             st.c_h -= e_dmg; triggerFlash();
             addLog(`${enemy.name}の攻撃：${e_dmg}ダメージ`, "log-dmg");
             updateUI();
-            if(st.c_h <= 0) break;
+            if(st.c_h <= 0) {
+                addLog("《カインは敗北した…》", "log-sys");
+                break;
+            }
         }
 
         if(st.owenAbsent <= 0 && freezeCount <= 0) {
@@ -168,7 +172,12 @@ async function battle(isBoss = false) {
             let e_dmg = Math.max(1, enemy.atk - st.def);
             st.c_h -= e_dmg; triggerFlash();
             addLog(`${enemy.name}の反撃：${e_dmg}ダメージ`, "log-dmg");
+            updateUI();
             if(Math.random() < enemy.poison) { st.poison = 1; addLog("カインは毒を受けた！", "log-dmg"); }
+            if(st.c_h <= 0) {
+                addLog("《カインは敗北した…》", "log-sys");
+                break;
+            }
         } else if (freezeCount > 0) {
             addLog(`${enemy.name}は凍りついている`); 
             freezeCount--;
@@ -192,7 +201,7 @@ async function battle(isBoss = false) {
         if(isBoss) st.dist = st.max_dist; 
         if(st.exp >= st.lv * 40) { 
             st.lv++; st.exp = 0; st.atk += 2; st.def += 1; 
-            st.c_mh += 15; // 最大HPも成長させてみる
+            st.c_mh += 15; 
             st.c_h = st.c_mh; 
             addLog(`【レベルアップ】Lv.${st.lv} (最大HPが向上！)`, "log-sys");
         }
