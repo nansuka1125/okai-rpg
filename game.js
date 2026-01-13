@@ -2,7 +2,7 @@ let st = {
     stage: 1, lv: 1, exp: 0, atk: 10, def: 5,
     c_h: 120, c_mh: 120, c_m: 50, c_mm: 50, 
     gInv: 0, tInv: 0, 
-    herb: 0, sw: 0, debug: 99, // 薬草・甘味は0、《猛毒》を99に設定
+    herb: 1, sw: 0, debug: 99, // 薬草1、甘味0、《猛毒》99
     dist: 10, max_dist: 10, kainKills: 0, owenKills: 0, 
     inCombat: false, inEvent: false, enemyMul: 1.0, 
     owenAbsent: 0, owenPatience: 3, poison: 0, fukutsuUsed: false
@@ -40,7 +40,6 @@ const playScenario = async (scenarioArray) => {
         addLog(`<span ${speakerClass}>${msg.name}${msg.text}</span>`);
     }
     
-    // 納品イベント（REPORT）の場合のみ、次章ボタンを表示
     const isReport = (scenarioArray === DATA.SCENARIO.REPORT_STAGE_1);
     if (isReport) {
         document.getElementById('btn-next').style.display = "block";
@@ -63,7 +62,7 @@ const updateUI = () => {
         document.getElementById('c-lv').innerText = `Lv.${st.lv} CAIN ${st.poison > 0 ? "[毒]" : ""}`;
         
         const target = st.stage === 1 ? 3 : 5;
-        const totalCoin = st.gInv + st.tInv; // 合計で判定
+        const totalCoin = st.gInv + st.tInv; 
         
         document.getElementById('m-title').innerText = `目的：銀貨を${target}枚持ち帰れ`;
         document.getElementById('m-count').innerText = `倉庫の蓄え: ${st.gInv} / ${target}`;
@@ -172,7 +171,7 @@ async function battle(isBoss = false) {
         }
 
         if(isBoss) {
-            addLog("《強大な魔力を退けた……カインたちは急いで宿屋へと戻った。》", "log-sys");
+            addLog("《勝利！強大な魔力を退けた……カインたちは急いで宿屋へと戻った。》", "log-sys");
             st.dist = st.max_dist; 
         }
 
@@ -210,17 +209,21 @@ window.act = function(type, arg) {
     } else if(type === 'report') {
         playScenario(DATA.SCENARIO.REPORT_STAGE_1);
     } else if(type.startsWith('use_')) {
-        if(type === 'use_db') { // デバッグ用《猛毒》の処理
+        // デバッグ用《猛毒》を最優先で処理
+        if(type === 'use_db') {
             if(st.debug > 0) {
                 st.debug--; st.c_h = 5;
-                addLog("《猛毒》を使用した。カインは瀕死になった。");
+                addLog("《猛毒》を使用した。カインは瀕死になった。", "log-dmg");
                 toggleModal(false); updateUI();
             }
-            return;
+            return; // ここでact関数を終了
         }
-        const itemKey = type === 'use_hb' ? 'herb' : 'sweets';
+
+        const isHerb = (type === 'use_hb');
+        const itemKey = isHerb ? 'herb' : 'sweets';
         const item = DATA.ITEMS[itemKey];
-        const prop = type === 'use_hb' ? 'herb' : 'sw';
+        const prop = isHerb ? 'herb' : 'sw';
+        
         if(st[prop] > 0) {
             st[prop]--; st.c_h = Math.min(st.c_mh, st.c_h + item.heal);
             if(item.curePoison) st.poison = 0;
