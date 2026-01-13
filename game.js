@@ -2,7 +2,7 @@ let st = {
     stage: 1, lv: 1, exp: 0, atk: 10, def: 5,
     c_h: 120, c_mh: 120, c_m: 50, c_mm: 50, 
     gInv: 0, tInv: 0, 
-    herb: 1, sw: 0, debug: 99, // 薬草1、甘味0、《猛毒》99
+    herb: 1, sw: 0, debug: 99, 
     dist: 10, max_dist: 10, kainKills: 0, owenKills: 0, 
     inCombat: false, inEvent: false, enemyMul: 1.0, 
     owenAbsent: 0, owenPatience: 3, poison: 0, fukutsuUsed: false
@@ -50,17 +50,38 @@ const playScenario = async (scenarioArray) => {
 const updateUI = () => {
     try {
         const hFill = document.getElementById('h-fill');
-        const mFill = document.getElementById('m-fill');
-        if(!hFill || !mFill) return;
-        hFill.style.backgroundColor = st.poison > 0 ? "#8e44ad" : "#e74c3c";
-        hFill.style.width = Math.max(0, (st.c_h / st.c_mh * 100)) + "%";
-        mFill.style.width = Math.max(0, (st.c_m / st.c_mm * 100)) + "%";
+        const hBar = document.getElementById('h-bar');
+        const hpValues = document.getElementById('hp-values');
+        if(!hFill || !hBar || !hpValues) return;
+        
+        // 1. HP数値の更新
+        hpValues.innerText = `${Math.max(0, Math.floor(st.c_h))} / ${st.c_mh}`;
+
+        // 2. 外枠(h-bar)の長さを最大HPに連動させる (成長の可視化)
+        const baseWidth = 1.6; 
+        hBar.style.width = (st.c_mh * baseWidth) + "px";
+
+        // 3. 塗りつぶし(h-fill)の割合
+        const hpPercent = (st.c_h / st.c_mh) * 100;
+        hFill.style.width = Math.max(0, hpPercent) + "%";
+        
+        // 4. 色の変化（毒 > ピンチ(30%以下) > 通常）
+        if (st.poison > 0) {
+            hFill.style.backgroundColor = "#8e44ad"; 
+        } else if (hpPercent <= 30) {
+            hFill.style.backgroundColor = "#f39c12"; // オレンジ寄り
+        } else {
+            hFill.style.backgroundColor = "#e74c3c"; 
+        }
+        
+        // その他のUI
         document.getElementById('c-lv').innerText = `Lv.${st.lv} CAIN ${st.poison > 0 ? "[毒]" : ""}`;
         const target = st.stage === 1 ? 3 : 5;
         const totalCoin = st.gInv + st.tInv; 
         document.getElementById('m-title').innerText = `目的：銀貨を${target}枚持ち帰れ`;
         document.getElementById('m-count').innerText = `倉庫の蓄え: ${st.gInv} / ${target}`;
         document.getElementById('dist-ui').innerText = `宿屋まで: ${st.max_dist - st.dist}km / 目的地まで: ${st.dist}km`;
+        
         const idle = !st.inCombat && !st.inEvent;
         const atInn = (st.dist >= st.max_dist);
         const atGoal = (st.dist <= 0);
@@ -68,6 +89,7 @@ const updateUI = () => {
         document.getElementById('btn-boss').style.display = (idle && atGoal) ? "block" : "none";
         document.getElementById('btn-report').style.display = (idle && atInn && totalCoin >= target) ? "block" : "none";
         document.getElementById('btn-inn').style.display = (idle && atInn && totalCoin < target) ? "block" : "none";
+        
     } catch(e) { console.error("UI Update Error:", e); }
 };
 
@@ -86,7 +108,6 @@ window.toggleModal = (show) => {
     } else { m.style.display = 'none'; }
 };
 
-// バトルロジックの修正版
 async function battle(isBoss = false) {
     st.inCombat = true; updateUI();
     const enemy = isBoss ? DATA.BOSSES[`stage${st.stage}`] : DATA.ENEMIES[Math.floor(Math.random()*DATA.ENEMIES.length)];
@@ -95,7 +116,6 @@ async function battle(isBoss = false) {
     let lastHitter = 'kain';
     addLog(`${enemy.name}が現れた。`, "log-sys");
 
-    // 【追加】25%の確率で敵の先制攻撃
     if (Math.random() < 0.25 || isBoss) {
         addLog(`${enemy.name}の先制攻撃！`, "log-dmg");
         let e_dmg = Math.max(1, enemy.atk - st.def);
@@ -107,7 +127,6 @@ async function battle(isBoss = false) {
     while(e_hp > 0 && st.c_h > 0) {
         await new Promise(r => setTimeout(r, 600));
 
-        // 毒ダメージ
         if(st.poison > 0) {
             st.c_h -= 7; addLog(`毒ダメージ：7`, "log-dmg");
             if(Math.random() < 0.1) { 
@@ -117,7 +136,6 @@ async function battle(isBoss = false) {
             if(st.c_h <= 0) break;
         }
 
-        // 毎ターン50%の確率で敵が先に動く
         const enemyFirst = Math.random() < 0.5;
 
         if (enemyFirst && freezeCount <= 0) {
@@ -128,7 +146,6 @@ async function battle(isBoss = false) {
             if(st.c_h <= 0) break;
         }
 
-        // カインのターン
         if(st.owenAbsent <= 0 && freezeCount <= 0) {
             if(st.c_h / st.c_mh <= 0.4 && Math.random() < 0.15) {
                 e_hp = 0; lastHitter = 'owen';
@@ -147,16 +164,11 @@ async function battle(isBoss = false) {
 
         if(e_hp <= 0) { lastHitter = 'kain'; break; }
 
-        // カインが先に動いた場合、敵の反撃
         if (!enemyFirst && freezeCount <= 0) {
             let e_dmg = Math.max(1, enemy.atk - st.def);
-            if(enemy.type === "bonus" && Math.random() < 0.4) {
-                addLog(`${enemy.name}は素早く身をかわした！`);
-            } else {
-                st.c_h -= e_dmg; triggerFlash();
-                addLog(`${enemy.name}の反撃：${e_dmg}ダメージ`, "log-dmg");
-                if(Math.random() < enemy.poison) { st.poison = 1; addLog("カインは毒を受けた！", "log-dmg"); }
-            }
+            st.c_h -= e_dmg; triggerFlash();
+            addLog(`${enemy.name}の反撃：${e_dmg}ダメージ`, "log-dmg");
+            if(Math.random() < enemy.poison) { st.poison = 1; addLog("カインは毒を受けた！", "log-dmg"); }
         } else if (freezeCount > 0) {
             addLog(`${enemy.name}は凍りついている`); 
             freezeCount--;
@@ -180,7 +192,9 @@ async function battle(isBoss = false) {
         if(isBoss) st.dist = st.max_dist; 
         if(st.exp >= st.lv * 40) { 
             st.lv++; st.exp = 0; st.atk += 2; st.def += 1; 
-            st.c_h = st.c_mh; addLog(`【レベルアップ】Lv.${st.lv}`, "log-sys");
+            st.c_mh += 15; // 最大HPも成長させてみる
+            st.c_h = st.c_mh; 
+            addLog(`【レベルアップ】Lv.${st.lv} (最大HPが向上！)`, "log-sys");
         }
     }
     st.inCombat = false; updateUI();
@@ -239,6 +253,6 @@ window.act = function(type, arg) {
 
 window.onload = () => {
     updateUI();
-    addLog("【宿屋の入り口】", "log-sys");
+    addLog("【古びた宿屋の入り口】", "log-sys");
     playScenario(DATA.SCENARIO.INTRO);
 };
