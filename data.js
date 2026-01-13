@@ -62,8 +62,10 @@ const DATA = {
         stage1: { name: "琥珀の守護獣", hp: 200, atk: 25, exp: 500, coin: 0, poison: 0 }
     },
 
-    ITEMS: {
+        ITEMS: {
         herb: { name: "薬草", heal: 30, curePoison: true },
-        sweets: { name: "甘味", heal: 40, curePoison: false }
+        sweets: { name: "甘味", heal: 40, curePoison: false },
+        debug_poison: { name: "《猛毒》", heal: -999, curePoison: false } // デバッグ用
     }
+
 };
