@@ -205,7 +205,7 @@ window.act = function(type, arg) {
 window.onload = () => {
     updateUI(); st.inEvent = true;
     addLog("【宿屋の入り口】", "log-sys");
-    setTimeout(() => addLog("店主「おまえたち、そろそろ宿代を払ってくれないかね。」"), 1000);
+    setTimeout(() => addLog("店主「…おまえたち、そろそろ宿代を払ってくれないかね。」"), 1000);
     setTimeout(() => addLog("店主「銀貨3枚、持ってきてくれ。……でないと今夜の寝床はないよ」"), 2500);
     setTimeout(() => addLog("カイン「……わかった。すぐに行く」"), 4000);
     setTimeout(() => addLog(`<span class='log-owen'>オーエン「えー、僕も？ 働き者の騎士様が一人でやればいいのに」</span>`), 5500);
