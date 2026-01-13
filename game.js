@@ -27,6 +27,7 @@ const triggerFlash = () => {
     overlay.className = 'damage-flash';
     overlay.style.position = 'fixed'; overlay.style.top = 0; overlay.style.left = 0;
     overlay.style.width = '100%'; overlay.style.height = '100%'; overlay.style.pointerEvents = 'none';
+    overlay.style.zIndex = 9999;
     document.body.appendChild(overlay);
     setTimeout(() => overlay.remove(), 200);
 };
@@ -52,6 +53,20 @@ const updateUI = () => {
     } catch(e) { console.error("UI Update Error:", e); }
 };
 
+window.toggleModal = (show) => {
+    if(st.inCombat || st.inEvent) return;
+    const m = document.getElementById('modal');
+    if(show) {
+        const list = document.getElementById('item-list');
+        let html = "";
+        if(st.herb > 0) html += `<div class="item-row"><span>薬草</span><span>${st.herb}個</span></div>`;
+        if(st.sw > 0) html += `<div class="item-row"><span>甘味</span><span>${st.sw}個</span></div>`;
+        if(st.tInv > 0) html += `<div class="item-row"><span>銀貨(持)</span><span>${st.tInv}枚</span></div>`;
+        list.innerHTML = html || "所持品なし";
+        m.style.display = 'flex';
+    } else { m.style.display = 'none'; }
+};
+
 async function battle(isBoss = false) {
     st.inCombat = true; updateUI();
     const enemy = isBoss ? {name:"琥珀の守護獣", hp:200, atk:25, poison:0, coin:0, exp:500, type:"boss"} : DATA.ENEMIES[Math.floor(Math.random()*DATA.ENEMIES.length)];
@@ -72,9 +87,8 @@ async function battle(isBoss = false) {
         if(st.owenAbsent <= 0 && freezeCount <= 0) {
             if(st.c_h / st.c_mh <= 0.4 && Math.random() < 0.1) {
                 e_hp = 0; lastHitter = 'owen';
-                addLog(`<span class='log-owen'>【オーエン】「消えろ」</span>`);
-                addLog(`《トランクから放たれた影が${enemy.name}を飲み込んだ。》`, "log-sys");
-                break;
+                addLog(`<span class='log-owen'>【オーエンがトランクを開けた】「消えろ」</span>`);
+                addLog(`《トランクから放たれた影が${enemy.name}を飲み込んだ。》`, "log-sys"); break;
             } else if(Math.random() < 0.15) {
                 freezeCount = 2; addLog(`<span class='log-owen'>オーエン「……凍れよ」</span>`);
                 addLog(`《戦場が凍りついた。カインは一気に間合いを詰める！》`, "log-sys");
@@ -93,7 +107,7 @@ async function battle(isBoss = false) {
         if(e_hp <= 0) break;
 
         if(freezeCount > 0) { 
-            addLog(`${enemy.name}は凍りついている`); freezeCount--;
+            addLog(`${enemy.name}は凍っている`); freezeCount--;
             if(freezeCount === 0) addLog(`《${enemy.name}の凍結が解除された》`, "log-sys");
         } else {
             let e_dmg = Math.max(1, enemy.atk - st.def);
@@ -140,35 +154,60 @@ window.act = function(type, arg) {
         const move = Math.random() > 0.5 ? 2 : 1;
         if(arg === 'fwd') st.dist = Math.max(0, st.dist - move);
         else st.dist = Math.min(st.max_dist, st.dist + move);
-        
         const scene = DATA.MOVE_LOGS[Math.floor(Math.random()*DATA.MOVE_LOGS.length)];
         addLog(`${scene}(${move}km移動)`);
-        
         if(st.poison > 0) { st.c_h -= 5; addLog("毒が回っている……HP-5", "log-dmg"); if(st.c_h < 1) st.c_h = 1; }
         if(Math.random() < 0.45) battle(); else updateUI();
-    } else if(type === 'inn' || type === 'report') {
-        // ... (前回の報告/宿屋ロジックを維持) ...
-        if(type === 'inn') {
-            if(st.owenPatience <= 0) {
-                st.inEvent = true; document.body.style.background = "#000";
-                addLog("【バッドエンド：任務放棄】", "log-dmg");
-                addLog("いつのまにか宿屋は引き払われ……。");
-                addLog(`<span class='log-owen'>オーエン「帰るよ騎士様。…まだおまえには早かったんだよ。」</span>`); return;
-            }
-            st.gInv += st.tInv; st.tInv = 0; st.c_h = st.c_mh; st.poison = 0; addLog("【宿屋】休息した。"); updateUI();
-        } else {
-            st.inEvent = true; updateUI();
-            addLog("店主「おっ、ちゃんと持ってきたか」", "log-sys");
-            setTimeout(() => addLog("【その夜】", "log-sys"), 1500);
-            setTimeout(() => { addLog(`<span class='log-owen'>オーエン「次は街にしようよ……」</span>`); document.getElementById('btn-next').style.display = "block"; }, 3000);
+    } else if(type === 'inn') {
+        if(st.owenPatience <= 0) {
+            st.inEvent = true; document.body.style.background = "#000";
+            addLog("【バッドエンド：任務放棄】", "log-dmg");
+            addLog("いつのまにか宿屋は引き払われ……。");
+            addLog(`<span class='log-owen'>オーエン「帰るよ騎士様。…まだおまえには早かったんだよ。」</span>`); return;
         }
+        const target = st.stage === 1 ? 3 : 5;
+        if(st.gInv < target) {
+            addLog("《宿屋に戻ってきてしまった…銀貨が足りない》", "log-sys");
+            const ev = DATA.INN_SHORTAGE_EVENTS[Math.floor(Math.random()*DATA.INN_SHORTAGE_EVENTS.length)];
+            setTimeout(() => {
+                addLog("【宿屋・銀貨不足】", "log-sys"); 
+                addLog(ev.text);
+            }, 800);
+        } else { 
+            addLog("【宿屋】休息した。毒も消えたようだ。"); 
+            st.gInv += st.tInv; st.tInv = 0; st.c_h = st.c_mh; st.poison = 0;
+        }
+        updateUI();
+    } else if(type === 'report') {
+        st.inEvent = true; updateUI();
+        addLog("店主「おっ、ちゃんと持ってきたか。感心だね」", "log-sys");
+        setTimeout(() => addLog("【その夜】", "log-sys"), 1500);
+        setTimeout(() => addLog("カイン「……なんとか終わったか」"), 3000);
+        setTimeout(() => addLog(`<span class='log-owen'>オーエン「こんな序盤で何やってるの？弱すぎじゃない？」</span>`), 4500);
+        setTimeout(() => addLog("カイン「それはおまえが……いや、いい」"), 6000);
+        setTimeout(() => addLog(`<span class='log-owen'>オーエン「次は街にしようよ。ケーキ屋があるところがいい」</span>`), 7500);
+        setTimeout(() => addLog("カイン「……もし、ケーキ屋がなかったら？」"), 9000);
+        setTimeout(() => { 
+            addLog(`<span class='log-owen'>オーエン「……決まってるだろ？」</span>`);
+            document.getElementById('btn-next').style.display = "block";
+        }, 10500);
     } else if(type.startsWith('use_')) {
         const item = type === 'use_hb' ? 'herb' : 'sw';
-        if(st[item] > 0) { st[item]--; st.c_h = Math.min(st.c_mh, st.c_h + 30); st.poison = 0; addLog(`回復！`); toggleModal(false); updateUI(); }
-    } else if(type === 'boss') battle(true);
+        if(st[item] > 0) { st[item]--; st.c_h = Math.min(st.c_mh, st.c_h + 30); st.poison = 0; addLog(`回復！毒が消えた。`); toggleModal(false); updateUI(); }
+    } else if(type === 'boss') { battle(true); }
+    else if(type === 'next_stage') {
+        st.stage++; st.max_dist += 5; st.dist = st.max_dist; st.enemyMul += 0.2;
+        st.inEvent = false; document.getElementById('btn-next').style.display = "none";
+        addLog(`【第${st.stage}章】開始。`, "log-sys"); updateUI();
+    }
 };
 
 window.onload = () => {
-    updateUI(); st.inEvent = true; addLog("【宿屋の入り口】", "log-sys");
-    setTimeout(() => { addLog("店主「銀貨3枚、持ってきてくれ。」"); st.inEvent = false; updateUI(); }, 1000);
+    updateUI(); st.inEvent = true;
+    addLog("【宿屋の入り口】", "log-sys");
+    setTimeout(() => addLog("店主「おまえたち、そろそろ宿代を払ってくれないかね。」"), 1000);
+    setTimeout(() => addLog("店主「銀貨3枚、持ってきてくれ。……でないと今夜の寝床はないよ」"), 2500);
+    setTimeout(() => addLog("カイン「……わかった。すぐに行く」"), 4000);
+    setTimeout(() => addLog(`<span class='log-owen'>オーエン「えー、僕も？ 働き者の騎士様が一人でやればいいのに」</span>`), 5500);
+    setTimeout(() => { addLog("カイン「……行くぞ」"); st.inEvent = false; updateUI(); }, 7000);
 };
