@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Resonance RPG -Chapter Transition-</title>
+    <title>Resonance RPG -The Glutton-</title>
     <style>
         :root { --bg: #0a0a0c; --owen: #a335ee; --cain: #f1c40f; --hp: #e74c3c; --panel: #1a1a20; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body { background: var(--bg); color: #dcdde1; font-family: sans-serif; display: flex; flex-direction: column; height: 100dvh; width: 100vw; overflow: hidden; padding: 10px; }
-        
         .m-hdr { flex-shrink: 0; background: #000; border: 1px solid var(--cain); padding: 8px; border-radius: 4px; margin-bottom: 8px; text-align: center; }
         .st-bar { flex-shrink: 0; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; background: #111; padding: 6px; border-radius: 4px; border: 1px solid #333; }
         .c-lbl { font-size: 11px; font-weight: bold; color: var(--cain); white-space: nowrap; }
@@ -16,25 +15,20 @@
         .bg-b { background: #222; height: 6px; border-radius: 3px; overflow: hidden; }
         #h-fill { background: var(--hp); height: 100%; transition: width 0.3s; }
         #m-fill { background: #3498db; height: 100%; transition: width 0.3s; }
-        
         .d-ui { flex-shrink: 0; font-size: 11px; text-align: center; margin-bottom: 8px; color: #aaa; }
         #log { flex-grow: 1; overflow-y: auto; background: #000; border: 1px solid #222; border-radius: 4px; padding: 12px; font-size: 13px; line-height: 1.6; margin-bottom: 10px; }
-        
         .log-owen { color: var(--owen); font-weight: bold; }
         .log-dmg { color: #ff7675; } 
         .log-sys { color: #888; font-size: 11px; margin-top: 4px; border-top: 1px solid #111; padding-top: 2px; }
         .log-atk { color: #f1c40f; }
-
         .btns { flex-shrink: 0; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         button { background: #252e38; color: #fff; border: 1px solid #444; padding: 10px 4px; border-radius: 6px; font-size: 12px; font-weight: bold; min-height: 54px; cursor: pointer; }
         button:active { background: #1a252f; border-color: var(--cain); }
-
         #btn-boss, #btn-inn, #btn-report, #btn-next { grid-column: span 3; display: none; margin-bottom: 8px; }
         #btn-boss { background: #633277; border: 1px solid var(--owen); }
         #btn-inn { background: #2c3e50; border-color: var(--cain); }
-        #btn-report { background: #a27e1c; border-color: #fff; color: #fff; }
-        #btn-next { background: #1e3a5f; border-color: #3498db; color: #fff; }
-
+        #btn-report { background: #a27e1c; color: #fff; }
+        #btn-next { background: #1e3a5f; color: #fff; }
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 100; }
         .modal-content { background: var(--panel); border: 1px solid #444; width: 90%; padding: 20px; border-radius: 8px; }
     </style>
@@ -43,7 +37,7 @@
 
     <div class="m-hdr" id="m-box">
         <div style="font-weight:bold; color:var(--cain); font-size:14px;" id="m-title">目的：古い銀貨を3枚持ち帰れ</div>
-        <div style="font-size:11px;" id="m-count">倉庫の蓄え: 0 / 3</div>
+        <div style="font-size:11px;" id="m-count">倉庫: 0 / 3</div>
     </div>
 
     <div class="st-bar">
@@ -54,19 +48,19 @@
         </div>
     </div>
 
-    <div class="d-ui" id="dist-ui">宿屋まで: 0km / 目的地まで: 10km</div>
+    <div class="d-ui" id="dist-ui">目的地まで: 10km</div>
 
     <div id="log"></div>
 
     <button id="btn-boss" onclick="act('boss')">深部に潜む影と対峙する</button>
-    <button id="btn-report" onclick="act('report')">店主に報告する (銀貨3枚消費)</button>
-    <button id="btn-next" onclick="act('next_stage')">【ステージ1クリア！ステージ2へ】</button>
+    <button id="btn-report" onclick="act('report')">店主に報告する</button>
+    <button id="btn-next" onclick="act('next_stage')">【次章へ進む】</button>
     <button id="btn-inn" onclick="act('inn')">宿屋の暖簾を潜る</button>
 
     <div class="btns" id="normal-btns">
-        <button id="btn-fwd" onclick="act('move', 'fwd')">進む</button>
-        <button id="btn-bwd" onclick="act('move', 'bwd')">戻る</button>
-        <button id="btn-item" onclick="toggleModal(true)">アイテム/強化</button>
+        <button onclick="act('move', 'fwd')">進む</button>
+        <button onclick="act('move', 'bwd')">戻る</button>
+        <button onclick="toggleModal(true)">所持品/強化</button>
     </div>
 
     <div id="modal">
@@ -75,7 +69,7 @@
             <div id="mdl-stats"></div>
             <div style="display:grid; grid-template-columns: 1fr; gap:10px; margin-top:15px;">
                 <button onclick="act('use_hb')" style="background:#2d5a27; min-height:40px;">薬草を使う (HP+30)</button>
-                <button id="shop-atk" onclick="act('shop_atk')" style="background:#4a3c28; min-height:40px; display:none;">武器を研ぐ (倉庫の銀貨3消費: ATK+2)</button>
+                <button id="shop-atk" onclick="act('shop_atk')" style="background:#4a3c28; min-height:40px; display:none;">武器を研ぐ (銀貨3消費)</button>
                 <button onclick="toggleModal(false)" style="background:#333; min-height:40px;">閉じる</button>
             </div>
         </div>
@@ -102,9 +96,9 @@ window.onload = function() {
         const m = document.getElementById('modal');
         if(show) {
             document.getElementById('mdl-stats').innerHTML = `
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Lv / 経験値</span><span>${st.lv} / ${st.exp}</span></div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>ATK / DEF</span><span>${st.atk} / ${st.def}</span></div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>手荷物の銀貨</span><span>${st.tInv}</span></div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>倉庫の素材</span><span>${st.gInv}</span></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>手荷物 / 倉庫</span><span>${st.tInv} / ${st.gInv}</span></div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>薬草 / 甘味</span><span>${st.herb} / ${st.sw}</span></div>
             `;
             document.getElementById('shop-atk').style.display = (st.dist >= st.max_dist) ? "block" : "none";
@@ -116,49 +110,24 @@ window.onload = function() {
         document.getElementById('h-fill').style.width = (st.c_h / st.c_mh * 100) + "%";
         document.getElementById('m-fill').style.width = (st.c_m / st.c_mm * 100) + "%";
         document.getElementById('c-lv').innerText = `Lv.${st.lv} CAIN`;
-        
-        const targetCount = st.stage === 1 ? 3 : 5;
-        const itemName = st.stage === 1 ? "銀貨" : "魔力の欠片";
-        document.getElementById('m-title').innerText = `目的：${itemName}を${targetCount}つ持ち帰れ`;
-        document.getElementById('m-count').innerText = `倉庫の蓄え: ${st.gInv} / ${targetCount}`;
+        const target = st.stage === 1 ? 3 : 5;
+        document.getElementById('m-title').innerText = st.stage === 1 ? "目的：古い銀貨を3枚持ち帰れ" : "目的：魔力の欠片を5つ集める";
+        document.getElementById('m-count').innerText = `倉庫の蓄え: ${st.gInv} / ${target}`;
         document.getElementById('dist-ui').innerText = `宿屋まで: ${st.max_dist - st.dist}km / 目的地まで: ${st.dist}km`;
         
-        const isAtInn = st.dist >= st.max_dist;
-        const canReport = st.gInv >= targetCount;
-
-        // ボタン制御
         const idle = !st.inCombat && !st.inEvent;
         document.getElementById('normal-btns').style.display = idle ? "grid" : "none";
         document.getElementById('btn-boss').style.display = (idle && st.dist <= 0) ? "block" : "none";
-        
-        // 報告ボタンの優先表示
-        if (idle && isAtInn && canReport) {
-            document.getElementById('btn-report').style.display = "block";
-            document.getElementById('btn-inn').style.display = "none";
-        } else {
-            document.getElementById('btn-report').style.display = "none";
-            document.getElementById('btn-inn').style.display = (idle && isAtInn) ? "block" : "none";
-        }
-    }
-
-    async function startEvent() {
-        st.inEvent = true; ui();
-        st.gInv -= 3;
-        add("【任務完了】店主に銀貨を渡し、報酬を受け取った。", "log-sys");
-        add("<br>夜、宿屋の片隅で。");
-        await new Promise(r => setTimeout(r, 1200));
-        add("カイン「……序盤から結構ギリギリだったな」");
-        await new Promise(r => setTimeout(r, 1200));
-        add("<span class='log-owen'>オーエン「もっと強くなればいいだろ」</span>", "log-owen");
-        await new Promise(r => setTimeout(r, 1200));
-        add("カイン「今言おうと思ってたのに。……次はもっと奥へ行くぞ」");
-        await new Promise(r => setTimeout(r, 1000));
-        document.getElementById('btn-next').style.display = "block";
+        const isAtInn = st.dist >= st.max_dist;
+        const canReport = st.gInv >= target;
+        document.getElementById('btn-report').style.display = (idle && isAtInn && canReport) ? "block" : "none";
+        document.getElementById('btn-inn').style.display = (idle && isAtInn && !canReport) ? "block" : "none";
     }
 
     async function battle(isBoss = false) {
         st.inCombat = true; ui();
         let e_hp = (isBoss ? 200 : 30 + (st.lv * 10)) * st.enemyMul;
+        let lastHitter = 'kain';
         add(isBoss ? "【深部の闇】が巨大な『厄災の残滓』として現れた。" : "魔物が前方を阻んだ。", "log-sys");
 
         while(e_hp > 0 && st.c_h > 0) {
@@ -166,9 +135,9 @@ window.onload = function() {
             let neglect = false;
             const o_roll = Math.random();
             if(o_roll < 0.1) {
-                st.owenKills++;
+                lastHitter = 'owen'; e_hp = 0;
                 add("<span class='log-owen'>【助力を得る】</span>「……目障りだ」 オーエンが指先で虚空をなぞると、魔物は内側から弾け飛んだ。", "log-owen");
-                e_hp = 0; break;
+                break;
             } else if(o_roll < 0.25) {
                 add("<span class='log-owen'>【冷淡な観測】</span>オーエンは退屈そうに爪を眺め、戦況を黙殺している。", "log-owen");
                 neglect = true;
@@ -176,7 +145,8 @@ window.onload = function() {
             const dmg = Math.max(1, st.atk + Math.floor(Math.random()*5));
             e_hp -= dmg;
             add(`カインの剣撃：魔物に ${dmg} の損傷を与えた。`, "log-atk");
-            if(e_hp <= 0) break;
+            if(e_hp <= 0) { lastHitter = 'kain'; break; }
+
             let e_dmg = Math.max(1, (isBoss ? 25 : 12) * st.enemyMul - st.def);
             if(neglect) e_dmg = Math.floor(e_dmg * 1.5);
             st.c_h -= e_dmg;
@@ -184,24 +154,36 @@ window.onload = function() {
         }
 
         if(st.c_h <= 0) {
-            add("【敗走】手荷物を失い、宿屋へ運び込まれた。", "log-dmg");
+            add("【敗走】意識を失い、宿屋へ運び込まれた。", "log-dmg");
             st.dist = st.max_dist; st.tInv = 0; st.c_h = 20;
-        } else if(e_hp <= 0) {
-            st.kainKills++;
-            add(isBoss ? "目標地点を制圧した。宿屋へ戻ろう。" : "魔物を討ち果たした。");
-            st.exp += (isBoss ? 100 : 20);
-            if(st.exp >= st.lv * 50) {
+        } else {
+            if(lastHitter === 'kain') {
+                st.kainKills++; st.exp += 25;
+                add("カインは手際よく魔物を仕留め、戦利品を回収した。");
+                if(Math.random() < 0.5) {
+                    st.tInv++; add(`[${st.stage === 1 ? '古い銀貨' : '魔力の欠片'}]を回収。`, "log-sys");
+                }
+            } else {
+                st.owenKills++;
+                add("<span class='log-owen'>【オーエン】</span>「……塵になれ」 紫の炎が魔物を焼き払い、そこには塵一つ残らない。", "log-owen");
+                if(Math.random() < 0.2) {
+                    const item = Math.random() < 0.5 ? "薬草" : (st.stage === 1 ? "銀貨" : "欠片");
+                    if(Math.random() < 0.5) {
+                        add(`[${item}]が落ちている。`, "log-sys");
+                        add("<span class='log-owen'>オーエン「何見てるの？ あげないよ」</span>", "log-owen");
+                        add("オーエンは戦利品を無造作に踏み砕いた。");
+                    } else {
+                        add("<span class='log-owen'>オーエン「……これいらない。塵になる前に形を保ったようだね」</span>", "log-owen");
+                        if(item === "薬草") st.herb++; else st.tInv++;
+                    }
+                }
+            }
+            if(st.exp >= st.lv * 35) {
                 st.lv++; st.exp = 0; st.atk += 2; st.def += 1;
                 st.c_h = st.c_mh; add(`【LvUP】カインの練度が向上した。 (Lv.${st.lv})`, "log-sys");
             }
-            if(Math.random() < 0.6) {
-                st.tInv++; 
-                add(`[${st.stage === 1 ? '古い銀貨' : '魔力の欠片'}]を回収。`, "log-sys");
-            }
         }
-        st.inCombat = false;
-        if(isBoss && st.c_h > 0) st.dist = st.max_dist;
-        ui();
+        st.inCombat = false; if(isBoss && st.c_h > 0) st.dist = st.max_dist; ui();
     }
 
     window.act = function(type, arg) {
@@ -209,31 +191,45 @@ window.onload = function() {
             const move = Math.random() > 0.5 ? 2 : 1;
             if(arg === 'fwd') st.dist = Math.max(0, st.dist - move);
             else st.dist = Math.min(st.max_dist, st.dist + move);
-            add(arg === 'fwd' ? `${move}km、さらに奥地へ。` : `${move}km、宿屋へ戻る。`);
+            add(arg === 'fwd' ? `${move}km、奥へ。` : `${move}km、戻る。`);
             if(Math.random() < 0.45) battle(); else ui();
-        } else if(type === 'boss') {
-            battle(true);
-        } else if(type === 'report') {
-            startEvent();
+        } else if(type === 'boss') { battle(true); }
+        else if(type === 'report') {
+            st.inEvent = true; st.gInv -= (st.stage === 1 ? 3 : 5); ui();
+            add("【任務完了】店主に報告し、休息をとった。", "log-sys");
+            setTimeout(() => {
+                add("<br>カイン「……序盤から結構ギリギリだったな」");
+                setTimeout(() => {
+                    add("<span class='log-owen'>オーエン「もっと強くなればいいだろ」</span>", "log-owen");
+                    document.getElementById('btn-next').style.display = "block";
+                }, 1000);
+            }, 1000);
         } else if(type === 'next_stage') {
-            st.stage = 2;
-            st.max_dist = 15;
-            st.dist = 15;
-            st.enemyMul = 1.2;
-            st.c_h = st.c_mh;
-            st.c_m = st.c_mm;
-            st.inEvent = false;
+            st.stage = 2; st.max_dist = 15; st.dist = 15; st.enemyMul = 1.2;
+            st.c_h = st.c_mh; st.inEvent = false;
             document.getElementById('btn-next').style.display = "none";
-            add("【ステージ2開始】より険しい道が二人を待っている。", "log-sys");
-            ui();
+            add("【第2章】魔力の欠片を求め、さらに深部へ。", "log-sys"); ui();
+        } else if(type === 'inn') {
+            add("【休息】宿屋の部屋に戻り、装備を解く。");
+            if(st.owenKills > st.kainKills * 2 && st.owenKills > 0) {
+                add("<span class='log-owen'>オーエン「騎士様サボりすぎじゃない？ かっこ悪いよ」</span>", "log-owen");
+                if(st.sw > 0) {
+                    add("<span class='log-owen'>オーエン「あーあ、むしゃくしゃする。……これ、全部僕がもらうから」</span>", "log-owen");
+                    add(`カイン「あ！ おい、それは……！」`, "log-sys");
+                    add(`オーエンはカインの手荷物から【甘味】をすべて奪い、口に放り込んだ。`, "log-dmg");
+                    st.sw = 0;
+                } else {
+                    add("<span class='log-owen'>オーエン「甘味すらないなんて、本当に使えないね」</span>", "log-owen");
+                }
+            } else {
+                add("<span class='log-owen'>オーエン「……ふん、少しはマシな動きだったんじゃない？」</span>", "log-owen");
+            }
+            st.gInv += st.tInv; st.tInv = 0; st.c_h = st.c_mh; st.c_m = st.c_mm;
+            st.kainKills = 0; st.owenKills = 0; ui();
         } else if(type === 'use_hb') {
             if(st.herb > 0) { st.herb--; st.c_h = Math.min(st.c_mh, st.c_h + 30); toggleModal(false); ui(); }
         } else if(type === 'shop_atk') {
             if(st.gInv >= 3) { st.gInv -= 3; st.atk += 2; toggleModal(false); ui(); }
-        } else if(type === 'inn') {
-            st.gInv += st.tInv; st.tInv = 0; st.c_h = st.c_mh; st.c_m = st.c_mm;
-            add("【休息】二人は英気を養った。");
-            ui();
         }
     };
     ui();
@@ -241,4 +237,3 @@ window.onload = function() {
 </script>
 </body>
 </html>
-　
