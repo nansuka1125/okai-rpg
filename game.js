@@ -1,7 +1,8 @@
 let st = { 
     stage: 1, lv: 1, exp: 0, atk: 10, def: 5,
     c_h: 120, c_mh: 120, c_m: 50, c_mm: 50, 
-    gInv: 0, tInv: 0, herb: 3, sw: 3, 
+    gInv: 0, tInv: 0, 
+    herb: 0, sw: 0, debug: 99, // 薬草・甘味は0、《猛毒》を99に設定
     dist: 10, max_dist: 10, kainKills: 0, owenKills: 0, 
     inCombat: false, inEvent: false, enemyMul: 1.0, 
     owenAbsent: 0, owenPatience: 3, poison: 0, fukutsuUsed: false
@@ -88,6 +89,7 @@ window.toggleModal = (show) => {
         let html = "";
         if(st.herb > 0) html += `<div class="item-row"><span>薬草</span><span>${st.herb}個</span></div>`;
         if(st.sw > 0) html += `<div class="item-row"><span>甘味</span><span>${st.sw}個</span></div>`;
+        if(st.debug > 0) html += `<div class="item-row"><span>《猛毒》</span><span>${st.debug}個</span></div>`;
         if(st.tInv > 0) html += `<div class="item-row"><span>銀貨(持)</span><span>${st.tInv}枚</span></div>`;
         list.innerHTML = html || "所持品なし";
         m.style.display = 'flex';
@@ -208,6 +210,14 @@ window.act = function(type, arg) {
     } else if(type === 'report') {
         playScenario(DATA.SCENARIO.REPORT_STAGE_1);
     } else if(type.startsWith('use_')) {
+        if(type === 'use_db') { // デバッグ用《猛毒》の処理
+            if(st.debug > 0) {
+                st.debug--; st.c_h = 5;
+                addLog("《猛毒》を使用した。カインは瀕死になった。");
+                toggleModal(false); updateUI();
+            }
+            return;
+        }
         const itemKey = type === 'use_hb' ? 'herb' : 'sweets';
         const item = DATA.ITEMS[itemKey];
         const prop = type === 'use_hb' ? 'herb' : 'sw';
