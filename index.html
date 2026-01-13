@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Resonance RPG -True Result-</title>
+    <title>Resonance RPG -Fixed-</title>
     <style>
         :root { --bg: #0a0a0c; --owen: #a335ee; --cain: #f1c40f; --hp: #e74c3c; --panel: #1a1a20; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
@@ -32,6 +32,7 @@
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 100; }
         .modal-content { background: var(--panel); border: 1px solid #444; width: 90%; padding: 20px; border-radius: 8px; }
         .item-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; }
+        .empty-msg { text-align: center; color: #666; padding: 20px 0; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -98,12 +99,12 @@ window.onload = function() {
         if(show) {
             const list = document.getElementById('item-list');
             const itemName = st.stage === 1 ? "古い銀貨" : "魔力の欠片";
-            list.innerHTML = `
-                <div class="item-row"><span>薬草</span><span>${st.herb} 個</span></div>
-                <div class="item-row"><span>甘味</span><span>${st.sw} 個</span></div>
-                <div class="item-row"><span>${itemName} (手荷物)</span><span>${st.tInv} 枚</span></div>
-                <div class="item-row"><span>${itemName} (倉庫)</span><span>${st.gInv} 枚</span></div>
-            `;
+            let html = "";
+            if(st.herb > 0) html += `<div class="item-row"><span>薬草</span><span>${st.herb} 個</span></div>`;
+            if(st.sw > 0) html += `<div class="item-row"><span>甘味</span><span>${st.sw} 個</span></div>`;
+            if(st.tInv > 0) html += `<div class="item-row"><span>${itemName} (手荷物)</span><span>${st.tInv} 枚</span></div>`;
+            if(st.gInv > 0) html += `<div class="item-row"><span>${itemName} (倉庫)</span><span>${st.gInv} 枚</span></div>`;
+            list.innerHTML = html || `<div class="empty-msg">所持アイテムはありません</div>`;
             document.getElementById('use-herb').style.display = st.herb > 0 ? "block" : "none";
             document.getElementById('shop-atk').style.display = (st.dist >= st.max_dist && st.gInv >= 3) ? "block" : "none";
             m.style.display = 'flex';
@@ -117,7 +118,6 @@ window.onload = function() {
         const target = st.stage === 1 ? 3 : 5;
         document.getElementById('m-count').innerText = `倉庫の蓄え: ${st.gInv} / ${target}`;
         document.getElementById('dist-ui').innerText = `宿屋まで: ${st.max_dist - st.dist}km / 目的地まで: ${st.dist}km`;
-        
         const idle = !st.inCombat && !st.inEvent;
         document.getElementById('normal-btns').style.display = idle ? "grid" : "none";
         document.getElementById('btn-boss').style.display = (idle && st.dist <= 0) ? "block" : "none";
@@ -139,17 +139,16 @@ window.onload = function() {
             const o_roll = Math.random();
             if(o_roll < 0.1) {
                 lastHitter = 'owen'; e_hp = 0;
-                add("<span class='log-owen'>【助力を得る】</span>「……目障りだ」 オーエンが指先で虚空をなぞると、魔物は内側から弾け飛んだ。", "log-owen");
+                add("<span class='log-owen'>【助力を得る】</span>「……目障りだ」", "log-owen");
                 break;
             } else if(o_roll < 0.25) {
-                add("<span class='log-owen'>【冷淡な観測】</span>オーエンは退屈そうに爪を眺め、戦況を黙殺している。", "log-owen");
+                add("<span class='log-owen'>【冷淡な観測】</span>", "log-owen");
                 neglect = true;
             }
             const dmg = Math.max(1, st.atk + Math.floor(Math.random()*5));
             e_hp -= dmg;
             add(`カインの剣撃：魔物に ${dmg} の損傷を与えた。`, "log-atk");
             if(e_hp <= 0) { lastHitter = 'kain'; break; }
-
             let e_dmg = Math.max(1, (isBoss ? 25 : 12) * st.enemyMul - st.def);
             if(neglect) e_dmg = Math.floor(e_dmg * 1.5);
             st.c_h -= e_dmg;
@@ -159,29 +158,32 @@ window.onload = function() {
         if(st.c_h <= 0) {
             add("【敗走】カインの意識が途絶える。", "log-dmg");
             add("<span class='log-owen'>オーエン「……ちっ、使えないな」</span>", "log-owen");
-            add("オーエンの冷徹な魔力が敵を焼き払い、動けないカインを宿屋まで引きずっていった。", "log-sys");
             st.dist = st.max_dist; st.tInv = 0; st.c_h = 20; st.defeatLast = true;
         } else {
             st.defeatLast = false;
             if(lastHitter === 'kain') {
                 st.kainKills++; st.exp += 25;
-                add("カインは手際よく魔物を仕留め、戦利品を回収した。");
+                add("カインは魔物を仕留めた。");
                 if(Math.random() < 0.5) { st.tInv++; add(`[戦利品]を回収。`, "log-sys"); }
             } else {
                 st.owenKills++;
-                add("<span class='log-owen'>【オーエン】</span>「僕の獲物だ。塵一つ残したくない」", "log-owen");
+                if (isBoss) {
+                    add("<span class='log-owen'>オーエン「僕の獲物だ」</span>", "log-owen");
+                } else {
+                    add("<span class='log-owen'>オーエン「雑魚すぎ」</span>", "log-owen");
+                }
                 if(Math.random() < 0.2) {
                     if(Math.random() < 0.5) {
                         add("<span class='log-owen'>オーエン「何見てるの？ あげないよ」</span>", "log-owen");
                     } else {
-                        add("<span class='log-owen'>オーエン「……これいらない。塵になる前に拾えたのは幸運だね」</span>", "log-owen");
+                        add("<span class='log-owen'>オーエン「……これいらない」</span>", "log-owen");
                         st.tInv++;
                     }
                 }
             }
             if(st.exp >= st.lv * 35) {
                 st.lv++; st.exp = 0; st.atk += 2; st.def += 1; st.c_h = st.c_mh;
-                add(`【LvUP】カインの練度が向上した。 (Lv.${st.lv})`, "log-sys");
+                add(`【LvUP】Lv.${st.lv}`, "log-sys");
             }
         }
         st.inCombat = false; if(isBoss && st.c_h > 0) st.dist = st.max_dist; ui();
@@ -197,9 +199,9 @@ window.onload = function() {
         } else if(type === 'boss') { battle(true); }
         else if(type === 'report') {
             st.inEvent = true; st.gInv -= (st.stage === 1 ? 3 : 5); ui();
-            add("【任務完了】店主に報告し、休息をとった。", "log-sys");
+            add("【任務完了】報告を済ませた。", "log-sys");
             setTimeout(() => {
-                add("<br>カイン「……序盤から結構ギリギリだったな」");
+                add("<br>カイン「……ギリギリだったな」");
                 setTimeout(() => {
                     add("<span class='log-owen'>オーエン「もっと強くなればいいだろ」</span>", "log-owen");
                     document.getElementById('btn-next').style.display = "block";
@@ -209,20 +211,20 @@ window.onload = function() {
             st.stage = 2; st.max_dist = 15; st.dist = 15; st.enemyMul = 1.2;
             st.c_h = st.c_mh; st.inEvent = false;
             document.getElementById('btn-next').style.display = "none";
-            add("【第2章】魔力の欠片を求め、さらに深部へ。", "log-sys"); ui();
+            add("【第2章】開始。", "log-sys"); ui();
         } else if(type === 'inn') {
-            add("【休息】宿屋の部屋に戻る。");
+            add("【休息】宿屋へ戻る。");
             if(st.defeatLast) {
-                add("<span class='log-owen'>オーエン「……ちっ。次は置いていくからな」</span>", "log-owen");
+                add("<span class='log-owen'>オーエン「……ちっ」</span>", "log-owen");
                 st.defeatLast = false;
             } else if(st.owenKills > st.kainKills * 2 && st.owenKills > 0) {
-                add("<span class='log-owen'>オーエン「騎士様サボりすぎじゃない？ かっこ悪いよ」</span>", "log-owen");
+                add("<span class='log-owen'>オーエン「かっこ悪いよ」</span>", "log-owen");
                 if(st.sw > 0) {
-                    add("<span class='log-owen'>オーエン「あーあ、むしゃくしゃする。……これ、全部僕がもらうから」</span>", "log-owen");
+                    add("<span class='log-owen'>オーエン「これ、全部僕がもらうから」</span>", "log-owen");
                     st.sw = 0;
                 }
             } else {
-                add("<span class='log-owen'>オーエン「……ふん、少しはマシな動きだったんじゃない？」</span>", "log-owen");
+                add("<span class='log-owen'>オーエン「……ふん」</span>", "log-owen");
             }
             st.gInv += st.tInv; st.tInv = 0; st.c_h = st.c_mh; st.c_m = st.c_mm;
             st.kainKills = 0; st.owenKills = 0; ui();
