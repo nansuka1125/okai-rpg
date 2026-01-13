@@ -1,33 +1,145 @@
-body { background: #1a1a1a; color: #f5f5f5; font-family: 'Helvetica', sans-serif; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-#game-container { width: 100%; max-width: 400px; position: relative; }
+body {
+    background: #1a1a1a;
+    color: #eee;
+    font-family: 'Courier New', Courier, monospace;
+    margin: 0;
+    overflow: hidden;
+    touch-action: manipulation;
+}
 
-/* ステータス周り */
-.status-bar { background: #333; height: 12px; width: 100%; border-radius: 6px; margin: 4px 0; overflow: hidden; border: 1px solid #444; }
-.fill { height: 100%; transition: width 0.3s; }
-#h-fill { background: #e74c3c; }
-#m-fill { background: #3498db; }
-#c-lv { font-weight: bold; font-size: 14px; margin-bottom: 2px; }
+#game-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-width: 500px;
+    margin: 0 auto;
+    border: 1px solid #333;
+}
 
-/* ログエリア */
-#log { background: #000; height: 350px; overflow-y: auto; padding: 10px; border: 1px solid #555; border-radius: 4px; font-size: 13px; line-height: 1.6; margin-bottom: 10px; }
-.log-sys { color: #95a5a6; font-size: 12px; border-bottom: 1px solid #333; margin-bottom: 5px; }
-.log-atk { color: #f1c40f; }
-.log-dmg { color: #ff7675; }
-.log-owen { color: #a29bfe; font-weight: bold; }
-.log-critical { color: #f1c40f; font-weight: bold; font-size: 1.1em; text-shadow: 1px 1px 0px #000; }
-.log-recovery { color: #2ecc71; font-weight: bold; }
+header {
+    padding: 10px;
+    background: #2c3e50;
+    font-size: 14px;
+    border-bottom: 2px solid #34495e;
+}
 
-/* ボタンレイアウト */
-.btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-button { background: #2c3e50; color: white; border: 1px solid #555; padding: 12px; border-radius: 4px; cursor: pointer; font-size: 14px; }
-button:active { background: #34495e; transform: scale(0.98); }
-#btn-boss, #btn-report, #btn-next { width: 100%; background: #c0392b; margin-top: 5px; font-weight: bold; }
+#status-area {
+    padding: 10px;
+    background: #222;
+}
 
-/* モーダル */
-#modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
-.modal-content { background: #222; padding: 20px; border-radius: 8px; width: 80%; border: 1px solid #444; }
-.item-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; }
+#c-lv {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
 
-/* フラッシュ効果 */
-.damage-flash { animation: flash 0.2s; position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
-@keyframes flash { 0% { background: rgba(255,0,0,0); } 50% { background: rgba(255,0,0,0.3); } 100% { background: rgba(255,0,0,0); } }
+.hp-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.hp-text-wrapper {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.bar-container {
+    height: 12px;
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 6px;
+    overflow: hidden;
+    max-width: 100%; /* 画面端で止まるように設定 */
+    transition: width 0.5s ease; /* ゲージ枠が伸びるアニメーション */
+}
+
+.bar-fill {
+    height: 100%;
+    width: 100%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+#log-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+    background: #000;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.log-owen { color: #5dade2; }
+.log-sys { color: #95a5a6; font-style: italic; }
+.log-atk { color: #eee; }
+.log-dmg { color: #e74c3c; font-weight: bold; }
+.log-critical { color: #f1c40f; font-weight: bold; }
+.log-recovery { color: #2ecc71; }
+
+#ui-area {
+    padding: 15px;
+    background: #2c3e50;
+}
+
+#dist-ui {
+    font-size: 12px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.btn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+button {
+    background: #34495e;
+    border: 1px solid #5d6d7e;
+    color: white;
+    padding: 12px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.special-btn {
+    width: 100%;
+    margin-top: 10px;
+    background: #e67e22;
+    font-weight: bold;
+}
+
+.damage-flash {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(231, 76, 60, 0.3);
+    pointer-events: none;
+    z-index: 100;
+}
+
+.modal-overlay {
+    position: fixed;
+    top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #2c3e50;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 300px;
+}
+
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #34495e;
+}
