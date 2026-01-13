@@ -117,7 +117,7 @@ async function battle(isBoss = false) {
         st.c_h -= e_dmg; triggerFlash();
         addLog(`${enemy.name}の攻撃：${e_dmg}ダメージ`, "log-dmg");
         updateUI();
-        if(st.c_h <= 0) { // 先制で倒れた場合
+        if(st.c_h <= 0) {
             addLog("《カインは敗北した…》", "log-sys");
         }
     }
@@ -185,9 +185,29 @@ async function battle(isBoss = false) {
         updateUI();
     }
 
+    // ★ここから修正：敗北時のランダム演出を追加
     if(st.c_h <= 0) {
-        st.owenPatience--; st.dist = st.max_dist; st.tInv = 0; st.c_h = 5; st.poison = 0;
-        addLog(`<span class='log-owen'>オーエン「${getQuote('INN_DEFEAT')}」</span>`);
+        st.owenPatience--; 
+        st.dist = st.max_dist; 
+        st.tInv = 0; 
+        st.c_h = 5; 
+        st.poison = 0;
+
+        const wakeUpMsgs = [
+            "《薄れゆく意識のなか、カインは古びた宿屋の天井を見上げていた》",
+            "《軋む身体に鞭打ち、カインは宿屋の片隅でどうにか意識を取り戻した》",
+            "《死の淵から連れ戻されたカインは、微かな温もりの中で目を覚ました》"
+        ];
+        const randomMsg = wakeUpMsgs[Math.floor(Math.random() * wakeMsgs.length)];
+
+        setTimeout(() => {
+            addLog(randomMsg, "log-sys");
+            updateUI();
+            setTimeout(() => {
+                addLog(`<span class='log-owen'>オーエン「${getQuote('INN_DEFEAT')}」</span>`);
+            }, 1000);
+        }, 800);
+
     } else if(e_hp <= 0) {
         addLog(`《${enemy.name}を倒した！》`, "log-sys");
         await new Promise(r => setTimeout(r, 800));
