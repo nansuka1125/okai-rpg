@@ -16,20 +16,24 @@ const DATA = {
         { name: "樹脂まとい", hp: 70, atk: 12, exp: 35, poison: 0, coin: 0.1, type: "hard" },
         { name: "森迷いの影", hp: 20, atk: 5, exp: 150, poison: 0, coin: 0.3, type: "rare" },
         { name: "琥珀樹の幼体", hp: 40, atk: 10, exp: 25, poison: 0.25, coin: 0.1, type: "poison" },
-        { name: "琥珀に封じられた骸", hp: 50, atk: 15, exp: 60, poison: 0, coin: 0.05, type: "story" }
+        { name: "琥珀に封じられた骸", hp: 50, atk: 15, exp: 60, poison: 0, coin: 0.05, type: "story" },
+        { name: "銀貨を隠し持つ小鬼", hp: 30, atk: 5, exp: 100, poison: 0, coin: 1.0, type: "bonus" }
+    ],
+    // 移動時の情景描写
+    MOVE_LOGS: [
+        "琥珀の木漏れ日の中を黙々と歩く。",
+        "背後からオーエンの冷たい視線を感じながら進む。",
+        "時折、森の奥で何かが爆ぜるような音が響く。",
+        "粘つく樹脂を踏みしめ、カインは先を急ぐ。",
+        "オーエンは欠伸をしながら、退屈そうにトランクを叩いている。"
     ],
     INN_SHORTAGE_EVENTS: [
         { text: "店主「頼むから早く銀貨を持ってきてくれ……店が潰れてしまう……」<br><span class='log-owen'>オーエン「僕が肩代わりしてあげてもいいけど……条件があるよ？（ニヤリ）」</span>" },
-        { text: "店主「……すまんが部屋は用意できん。馬小屋なら空いているが」<br>カイン「大丈夫だ、馬は好きだ。……暖かいしな」<br><span class='log-owen'>オーエン「……（絶句）」</span>" },
-        { text: "宿屋の娘「あの……カイン様、私の部屋でよければお泊まりになりますか？」<br>カイン「えっ？」<br><span style='color:#ff7675; font-size:11px;'>※泊まるとオーエンの不興を買うかもしれない……</span>" }
+        { text: "店主「……すまんが部屋は用意できん。馬小屋なら空いているが」<br>カイン「大丈夫だ、馬は好きだ。……暖かいしな」<br><span class='log-owen'>オーエン「……（絶句）」</span>" }
     ],
     ITEMS: {
         herb: { name: "薬草", desc: "HP30回復・毒解除" },
         sweets: { name: "甘味", desc: "HP40回復・毒解除" },
         coin: { name: "古い銀貨" }
-    },
-    STAGE1_EVENTS: [
-        { id: "gaze", dist_range: [6, 10], weight: 10, text: "オーエンの視線を感じる。……監視されているようだ。", effect: (s) => "（効果なし）" },
-        { id: "leave", dist_range: [6, 10], weight: 3, text: "オーエンがいなくなった。……勝手な奴だ。", effect: (s) => { s.owenAbsent = 3; return "3ターンの間、オーエンが戦闘に介入しない。"; } }
-    ]
+    }
 };
