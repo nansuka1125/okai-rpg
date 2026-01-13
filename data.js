@@ -1,5 +1,4 @@
 const DATA = {
-    // オーエンのセリフ集
     OWEN_QUOTES: {
         BATTLE_END_ZAKO: ["雑魚すぎ"],
         BATTLE_END_BOSS: ["僕の獲物だ"],
@@ -12,15 +11,13 @@ const DATA = {
         KEEP_ITEM: ["何見てるの？ あげないよ"]
     },
 
-    // アイテムデータ
     ITEMS: {
-        herb: { name: "薬草", desc: "HPを30回復する" },
-        sweets: { name: "甘味", desc: "オーエンの好物（MP回復予定）" },
+        herb: { name: "薬草", desc: "HPを30回復" },
+        sweets: { name: "甘味", desc: "HPを40回復（オーエンの好物）" },
         coin: { name: "古い銀貨", desc: "第1章の目的アイテム" },
         fragment: { name: "魔力の欠片", desc: "第2章の目的アイテム" }
     },
 
-    // ランダムイベント
     RANDOM_EVENTS: [
         {
             text: "古い石碑を見つけた。カインは失われた剣技のヒントを得た。",
@@ -40,4 +37,3 @@ const DATA = {
         }
     ]
 };
-l
