@@ -56,7 +56,6 @@ const updateUI = () => {
         
         hpValues.innerText = `${Math.max(0, Math.floor(st.c_h))} / ${st.c_mh}`;
 
-        // バーの基本の長さを 0.8 に調整（半分くらいにする）
         const baseWidth = 0.8; 
         hBar.style.width = (st.c_mh * baseWidth) + "px";
 
