@@ -1,4 +1,42 @@
-<div id="modal">
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Resonance RPG</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="m-hdr">
+        <div id="m-title" style="font-weight:bold; color:var(--cain); font-size:14px;"></div>
+        <div id="m-count" style="font-size:11px;"></div>
+    </div>
+
+    <div class="st-bar">
+        <span class="c-lbl" id="c-lv"></span>
+        <div class="bar-wrap">
+            <div class="bg-b"><div id="h-fill" style="width: 100%;"></div></div>
+            <div class="bg-b"><div id="m-fill" style="width: 100%;"></div></div>
+        </div>
+    </div>
+
+    <div class="d-ui" id="dist-ui"></div>
+
+    <div id="log"></div>
+
+    <button id="btn-boss" onclick="act('boss')">深部に潜む影と対峙する</button>
+    <button id="btn-report" onclick="act('report')">店主に報告する</button>
+    <button id="btn-next" onclick="act('next_stage')">【次章へ進む】</button>
+    <button id="btn-inn" onclick="act('inn')">宿屋の暖簾を潜る</button>
+
+    <div class="btns" id="normal-btns">
+        <button onclick="act('move', 'fwd')">進む</button>
+        <button onclick="act('move', 'bwd')">戻る</button>
+        <button onclick="toggleModal(true)">アイテム / 強化</button>
+    </div>
+
+    <div id="modal">
         <div class="modal-content">
             <h3 style="color:var(--cain); margin-bottom:15px; border-bottom:1px solid var(--cain);">所持アイテム</h3>
             <div id="item-list"></div>
@@ -10,3 +48,8 @@
             </div>
         </div>
     </div>
+
+    <script src="data.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
