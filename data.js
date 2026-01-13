@@ -11,6 +11,19 @@ const DATA = {
         KEEP_ITEM: ["何見てるの？ あげないよ"]
     },
 
+    // 宿屋の銀貨不足時イベント
+    INN_SHORTAGE_EVENTS: [
+        {
+            text: "店主「頼むから早く銀貨を持ってきてくれ……店が潰れてしまう……」<br><span class='log-owen'>オーエン「僕が肩代わりしてあげてもいいけど……条件があるよ？（ニヤリ）」</span>"
+        },
+        {
+            text: "店主「……すまんが部屋は用意できん。馬小屋なら空いているが」<br>カイン「大丈夫だ、馬は好きだ。……暖かいしな」<br><span class='log-owen'>オーエン「……（絶句）」</span>"
+        },
+        {
+            text: "宿屋の娘「あの……カイン様、私の部屋でよければお泊まりになりますか？」<br>カイン「えっ？」<br><span style='color:#ff7675; font-size:11px;'>※泊まるとオーエンの不興を買うかもしれない……</span>"
+        }
+    ],
+
     ITEMS: {
         herb: { name: "薬草", desc: "HPを30回復" },
         sweets: { name: "甘味", desc: "HPを40回復（オーエンの好物）" },
@@ -20,26 +33,19 @@ const DATA = {
 
     STAGE1_EVENTS: [
         { id: "gaze", dist_range: [6, 10], weight: 10, text: "オーエンの視線を感じる。……監視されているようだ。", effect: (st) => "（効果なし）" },
-        { id: "collect", dist_range: [6, 10], weight: 5, text: "落ちていた魔物の死骸から素材を回収した。", effect: (st) => { st.tInv++; return "戦利品を1つ入手。"; } },
         { id: "leave", dist_range: [6, 10], weight: 3, text: "オーエンがいなくなった。……勝手な奴だ。まあいい、すぐ戻るだろう。", effect: (st) => { st.owenAbsent = 3; return "3ターンの間、オーエンが戦闘に介入しなくなる。"; } },
         { id: "fall", dist_range: [6, 10], weight: 8, text: "カインが蹴つまずいた。膝を擦りむいたようだ。", effect: (st) => { st.c_h = Math.max(1, st.c_h - 2); return "HPが2減少した。"; } },
-        { id: "wet", dist_range: [6, 10], weight: 5, text: "カインのマントが濡れて重くなった。体力が奪われる……", effect: (st) => { st.c_mh -= 5; st.c_h = Math.min(st.c_h, st.c_mh); return "最大HPが5減少した。"; } },
-        { id: "smell", dist_range: [6, 10], weight: 5, text: "どこからかいい匂いがする。宿の夕飯を思い出し、少しだけ気力が湧いた。", effect: (st) => { st.c_m = Math.min(st.c_mm, st.c_m + 5); return "MPが5回復した。"; } },
-
         { id: "sing", dist_range: [0, 5], weight: 10, text: "カインは歌を歌った。結構響いたが、オーエンに冷ややかな目で見られた。", effect: (st) => "（効果なし）" },
-        { id: "corpse", dist_range: [0, 5], weight: 8, text: "新鮮な死骸が落ちている。……先客がいるのかもしれない。", effect: (st) => { st.encountUp = true; return "次の移動時、戦闘確率が上昇。"; } },
         { id: "chest", dist_range: [0, 5], weight: 5, text: "古びた宝箱を見つけた！", effect: (st) => {
             const roll = Math.random();
             if (roll < 0.3) { st.tInv++; return "【成功】銀貨を獲得！"; }
             else if (roll < 0.6) { st.forceBattle = true; return "【ミミック】即座に戦闘開始！"; }
-            else { return "【略奪】中身は空。オーエン『……中身？ さあ、なんのことかな』。彼は何かを隠した。"; }
+            else { return "【略奪】中身は空。<span class='log-owen'>オーエンが指先で銀貨を弄んでいる……。</span>"; }
         }},
         { id: "herbs", dist_range: [0, 5], weight: 5, text: "薬草の群生地を見つけた！", effect: (st) => {
             if (Math.random() < 0.5) { st.herb += 3; return "薬草を3つ入手！"; }
             else { st.herb += 1; return "オーエンが群生地を燃やした！薬草を1つしか回収できなかった……"; }
         }},
-        { id: "avert", dist_range: [0, 5], weight: 10, text: "強烈な視線を感じて振り返ると、オーエンにパッと目を逸らされた。", effect: (st) => "（効果なし）" },
-        { id: "bad_air", dist_range: [0, 5], weight: 8, text: "嫌な気配を感じる。空気が重く、肌がひりつく。", effect: (st) => { st.def -= 1; return "カインの防御力が1減少した。"; } },
         { id: "smile", dist_range: [0, 5], weight: 10, text: "オーエンはにやにやしている。……何か不吉なことでも考えているのか？", effect: (st) => "（効果なし）" }
     ]
 };
