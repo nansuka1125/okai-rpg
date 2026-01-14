@@ -8,12 +8,21 @@ let st = {
     herb: 1, sw: 0, debug: 99, 
     dist: 10, max_dist: 10, kainKills: 0, owenKills: 0, 
     inCombat: false, inEvent: false, enemyMul: 1.0, 
-    owenAbsent: 0, owenPatience: 3, poison: 0, fukutsuUsed: false
+    owenAbsent: 0, owenPatience: 3, poison: 0, fukutsuUsed: false,
+    // --- 追加: 機嫌システム ---
+    mood: 50,
+    _isBelowThreshold: false // HP30%判定用フラグ
 };
 
 // ==========================================
 // 2. 汎用ユーティリティ関数
 // ==========================================
+
+// オーエンの機嫌変動（第1段階：数値とログのみ）
+function applyMood(delta, reason = "") {
+    st.mood = Math.max(0, Math.min(100, st.mood + delta));
+    console.log(`[Mood Change] ${delta > 0 ? '+' : ''}${delta} | Reason: ${reason} | Current: ${st.mood}`);
+}
 
 // 台詞取得
 const getQuote = (key) => {
@@ -44,7 +53,7 @@ const triggerFlash = () => {
 // 3. 進行・演出コントロール
 // ==========================================
 
-// シナリオ再生（会話イベント用）
+// シナリオ再生
 const playScenario = async (scenarioArray) => {
     st.inEvent = true;
     updateUI();
@@ -62,7 +71,7 @@ const playScenario = async (scenarioArray) => {
     }
 };
 
-// UI更新（HPバーの伸縮ロジック含む）
+// UI更新
 const updateUI = () => {
     try {
         const hFill = document.getElementById('h-fill');
@@ -70,27 +79,26 @@ const updateUI = () => {
         const hpValues = document.getElementById('hp-values');
         if(!hFill || !hBar || !hpValues) return;
         
-        // HP数値表示
         hpValues.innerText = `${Math.max(0, Math.floor(st.c_h))} / ${st.c_mh}`;
-
-        // 最大HPに合わせてバー自体の長さを変える
         const baseWidth = 0.8; 
         hBar.style.width = (st.c_mh * baseWidth) + "px";
 
-        // 現在HPの割合
         const hpPercent = (st.c_h / st.c_mh) * 100;
         hFill.style.width = Math.max(0, hpPercent) + "%";
         
-        // 状態による色の変化
-        if (st.poison > 0) {
-            hFill.style.backgroundColor = "#8e44ad"; // 毒
-        } else if (hpPercent <= 30) {
-            hFill.style.backgroundColor = "#f39c12"; // 瀕死（オレンジ）
+        // --- HP30%しきい値判定（機嫌への影響） ---
+        if (hpPercent <= 30) {
+            if (!st._isBelowThreshold) {
+                applyMood(-15, "魂のインフラが揺らぐ焦燥");
+                st._isBelowThreshold = true;
+            }
+            hFill.style.backgroundColor = "#f39c12"; 
         } else {
-            hFill.style.backgroundColor = "#e74c3c"; // 通常（赤）
+            // 30%を上回ればフラグをリセットし、再度下回った時に発動可能にする
+            st._isBelowThreshold = false;
+            hFill.style.backgroundColor = st.poison > 0 ? "#8e44ad" : "#e74c3c";
         }
         
-        // ステータス・テキストの更新
         document.getElementById('c-lv').innerText = `Lv.${st.lv} CAIN ${st.poison > 0 ? "[毒]" : ""}`;
         const target = st.stage === 1 ? 3 : 5;
         const totalCoin = st.gInv + st.tInv; 
@@ -98,7 +106,6 @@ const updateUI = () => {
         document.getElementById('m-count').innerText = `倉庫の蓄え: ${st.gInv} / ${target}`;
         document.getElementById('dist-ui').innerText = `宿屋まで: ${st.max_dist - st.dist}km / 目的地まで: ${st.dist}km`;
         
-        // ボタンの表示制御
         const idle = !st.inCombat && !st.inEvent;
         const atInn = (st.dist >= st.max_dist);
         const atGoal = (st.dist <= 0);
@@ -135,20 +142,15 @@ window.toggleModal = (show) => {
 
 window.act = function(type, arg) {
     if(type === 'move') {
-        // 移動処理
         const move = Math.random() > 0.5 ? 2 : 1;
         if(arg === 'fwd') st.dist = Math.max(0, st.dist - move);
         else st.dist = Math.min(st.max_dist, st.dist + move);
         addLog(`${DATA.MOVE_LOGS[Math.floor(Math.random()*DATA.MOVE_LOGS.length)]}(${move}km移動)`);
         
-        // 毒の移動ダメージ
         if(st.poison > 0) { st.c_h -= 5; if(st.c_h < 1) st.c_h = 1; }
-        
-        // 戦闘チェック（battle関数は外部 battle.js に依存）
         if(Math.random() < 0.45) battle(); else updateUI();
 
     } else if(type === 'inn') {
-        // 宿屋（銀貨不足時）
         if(st.owenPatience <= 0) {
              st.inEvent = true; document.body.style.background = "#000";
              addLog("【バッドエンド：任務放棄】", "log-dmg");
@@ -160,6 +162,12 @@ window.act = function(type, arg) {
         setTimeout(() => {
             const ev = DATA.INN_EVENTS[Math.floor(Math.random()*DATA.INN_EVENTS.length)];
             addLog("【宿屋・銀貨不足】", "log-sys"); addLog(ev.text);
+            
+            // --- 追加: 宿屋娘イベント時の機嫌低下 ---
+            if(ev.id === "daughter") {
+                applyMood(-10, "騎士が外界のノイズに引きずられた");
+            }
+
             st.inEvent = false; updateUI();
         }, 800);
 
@@ -167,7 +175,6 @@ window.act = function(type, arg) {
         playScenario(DATA.SCENARIO.REPORT_STAGE_1);
 
     } else if(type.startsWith('use_')) {
-        // アイテム使用
         if(type === 'use_db') {
             if(st.debug > 0) {
                 st.debug--; st.c_h = 5;
@@ -184,10 +191,17 @@ window.act = function(type, arg) {
             st[prop]--; st.c_h = Math.min(st.c_mh, st.c_h + item.heal);
             if(item.curePoison) st.poison = 0;
             addLog(`${item.name}を使用。HPが${item.heal}回復！${item.curePoison ? "毒も消えた。" : ""}`);
+            
+            // --- 追加: 甘味使用時の機嫌上昇 ---
+            if(itemKey === 'sweets') {
+                applyMood(8, "外界のノイズが一時的に遮断された");
+            }
+
             toggleModal(false); updateUI();
         }
 
     } else if(type === 'boss') { 
+        applyMood(10, "世界が観賞に耐える強度を持った");
         battle(true); 
 
     } else if(type === 'next_stage') {
@@ -196,10 +210,6 @@ window.act = function(type, arg) {
         addLog(`【第${st.stage}章】開始。`, "log-sys"); updateUI();
     }
 };
-
-// ==========================================
-// 6. 初期化
-// ==========================================
 
 window.onload = () => {
     updateUI();
