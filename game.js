@@ -213,6 +213,6 @@ window.act = function(type, arg) {
 
 window.onload = () => {
     updateUI();
-    addLog("【古びた宿屋の入り口】", "log-sys");
+    addLog("【やばい宿屋の入り口】", "log-sys");
     playScenario(DATA.SCENARIO.INTRO);
 };
