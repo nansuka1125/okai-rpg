@@ -8,7 +8,7 @@ async function battle(isBoss = false) {
 
     // --- 追加: テレグラフ（予兆ログ）の実装 ---
     if (st.mood >= 70) {
-        addLog("《オーエンは満足げに、カインの騎士らしい横顔を値踏みするように眺めている》", "log-sys");
+        addLog("《オーエンは満足げにカインの剣に目をやった》", "log-sys");
     } else if (st.mood <= 30) {
         addLog("《周囲の空気が刺すように冷え、オーエンの影が理由のわからぬ焦燥に苛立たしげに揺れている》", "log-sys");
     }
