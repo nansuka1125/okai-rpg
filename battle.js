@@ -1,4 +1,3 @@
-
 async function battle(isBoss = false) {
     st.inCombat = true; updateUI();
     const enemy = isBoss ? DATA.BOSSES[`stage${st.stage}`] : DATA.ENEMIES[Math.floor(Math.random()*DATA.ENEMIES.length)];
@@ -6,6 +5,13 @@ async function battle(isBoss = false) {
     let freezeCount = 0;
     let lastHitter = 'kain';
     addLog(`${enemy.name}が現れた。`, "log-sys");
+
+    // --- 追加: テレグラフ（予兆ログ）の実装 ---
+    if (st.mood >= 70) {
+        addLog("《オーエンは満足げに、カインの騎士らしい横顔を値踏みするように眺めている》", "log-sys");
+    } else if (st.mood <= 30) {
+        addLog("《周囲の空気が刺すように冷え、オーエンの影が理由のわからぬ焦燥に苛立たしげに揺れている》", "log-sys");
+    }
 
     if (Math.random() < 0.25 || isBoss) {
         addLog(`${enemy.name}の先制攻撃！`, "log-dmg");
@@ -119,8 +125,10 @@ async function battle(isBoss = false) {
             st.c_mh += 15; 
             st.c_h = st.c_mh; 
             addLog(`【レベルアップ】Lv.${st.lv} (最大HPが向上！)`, "log-sys");
+            
+            // --- 追加: レベルアップ時の機嫌上昇 ---
+            applyMood(5, "騎士としての姿勢が洗練された");
         }
     }
     st.inCombat = false; updateUI();
 }
-
