@@ -1,54 +1,35 @@
-// 画面を更新する関数
 const updateUI = () => {
     const chData = DATA.STORY_DATA.CHAPTER_1;
-    if (!chData) return;
-
-    // HPバーの更新
+    document.getElementById('m-title').innerText = st.isNight ? "目的：荷馬車を護衛せよ" : "目的：銀貨を3枚納品せよ";
+    document.getElementById('m-count').innerText = `銀貨所持: ${st.tInv} / ${chData.goal_coins}`;
+    
     const hpPercent = (st.c_h / st.c_mh) * 100;
-    const hFill = document.getElementById('h-fill');
-    if(hFill) hFill.style.width = Math.max(0, hpPercent) + "%";
-    
-    const hpText = document.getElementById('hp-values');
-    if(hpText) hpText.innerText = `${Math.floor(st.c_h)} / ${st.c_mh}`;
+    document.getElementById('h-fill').style.width = Math.max(0, hpPercent) + "%";
+    document.getElementById('hp-values').innerText = `${Math.floor(st.c_h)} / ${st.c_mh}`;
 
-    // 倉庫の蓄え表示
-    const mCount = document.getElementById('m-count');
-    if(mCount) mCount.innerText = `倉庫の蓄え: ${st.tInv} / ${chData.goal_coins}`;
+    const base = st.isNight ? "【夜の森】" : "琥珀の森";
+    document.getElementById('dist-ui').innerText = `${base}: ${st.dist}km地点`;
 
-    // 距離の更新
-    const distUI = document.getElementById('dist-ui');
-    if(distUI) {
-        const base = chData.base_name || "拠点";
-        const goal = chData.goal_name || "目的地";
-        distUI.innerText = `${base}から: ${st.dist}km / ${goal}まで残り: ${st.max_dist - st.dist}km`;
-    }
-
-    // ボタンの表示制御
     const idle = !st.inCombat && !st.inEvent;
-    const normalBtns = document.getElementById('normal-btns');
-    if(normalBtns) normalBtns.style.display = idle ? "grid" : "none";
+    document.getElementById('normal-btns').style.display = idle ? "grid" : "none";
 
+    // ボタン制御
     const atBase = (st.dist === 0);
-    const canReport = (st.tInv >= chData.goal_coins && st.progress === 0);
-    
     const btnInn = document.getElementById('btn-inn');
-    if(btnInn) {
-        btnInn.style.display = (idle && atBase && !canReport) ? "block" : "none";
-        btnInn.innerText = `${chData.base_name}に入る`;
-    }
-
     const btnReport = document.getElementById('btn-report');
-    if(btnReport) btnReport.style.display = (idle && atBase && canReport) ? "block" : "none";
-
-    const atGoal = (st.dist === st.max_dist);
     const btnBoss = document.getElementById('btn-boss');
-    if(btnBoss) btnBoss.style.display = (idle && atGoal && st.progress >= 2) ? "block" : "none";
+
+    // 納品ボタン：銀貨3枚以上＆未納品時
+    btnReport.style.display = (idle && atBase && st.tInv >= 3 && st.progress === 0) ? "block" : "none";
+    // 宿屋ボタン：納品前
+    btnInn.style.display = (idle && atBase && st.progress === 0 && st.tInv < 3) ? "block" : "none";
+    
+    // ボスボタン：10km地点＆護衛中
+    btnBoss.style.display = (idle && st.dist === 10 && st.progress === 2) ? "block" : "none";
 };
 
-// ログを表示する関数
 const addLog = (txt, cls="") => {
     const log = document.getElementById('log');
-    if(!log) return;
     const d = document.createElement('div');
     if(cls) d.className = cls;
     d.innerHTML = txt;
@@ -56,59 +37,79 @@ const addLog = (txt, cls="") => {
     log.scrollTop = log.scrollHeight;
 };
 
-// 会話イベントを再生する関数
 const playScenario = async (scenarioArray) => {
-    if (!scenarioArray) return;
-    st.inEvent = true;
-    updateUI();
+    st.inEvent = true; updateUI();
     for (const msg of scenarioArray) {
-        await new Promise(r => setTimeout(r, msg.delay || 500));
+        await new Promise(r => setTimeout(r, 700));
         addLog(`<b>${msg.name}</b>：${msg.text}`);
     }
-    st.inEvent = false;
-    updateUI();
+    st.inEvent = false; updateUI();
 };
 
-// ボタンを押した時の動作
 window.act = async function(type, arg) {
     if (st.inCombat || st.inEvent) return;
 
     if(type === 'move') {
+        let oldDist = st.dist;
         if(arg === 'fwd') st.dist = Math.min(10, st.dist + 1);
         else st.dist = Math.max(0, st.dist - 1);
         
         addLog(`探索中... (${st.dist}km地点)`);
-        
-        // イベントチェック
-        const event = DATA.STORY_DATA.CHAPTER_1.EVENTS[st.dist];
-        if(event) {
-            await playScenario(event);
-        } else if(Math.random() < 0.3 && st.dist > 0 && st.dist < 10) {
-            if(typeof window.battle === 'function') {
-                await window.battle();
-            }
+
+        // 夜の護衛イベント（progress 2の時のみ）
+        if(st.isNight && st.progress === 2 && st.dist > oldDist) {
+            const ev = DATA.SCENARIO.NIGHT_WALK[st.dist];
+            if(ev) await playScenario(ev);
+            if(st.dist === 10) await playScenario([{name:"カイン", text:"来たか…！"}, {name:"荷馬車", text:"助けてくれお前たち"}, {name:"オーエン", text:"ボス戦だね"}]);
         }
+        
+        // 2km地点の荷馬車（夜限定）
+        if(st.isNight && st.dist === 2 && st.progress === 1) {
+            addLog("<button onclick='wagonEvent()' class='special-btn'>荷馬車に話しかける</button>");
+        }
+
+        if(Math.random() < 0.2 && st.dist > 0 && st.dist < 10) await window.battle();
+        updateUI();
+    } else if(type === 'report') {
+        await playScenario([{name:"店主", text:DATA.STORY_DATA.CHAPTER_1.MSG.REPORT_THANKS}]);
+        await playScenario([{name:"カイン", text:DATA.STORY_DATA.CHAPTER_1.MSG.GO_FOREST}]);
+        st.tInv -= 3; st.progress = 1; st.isNight = true; 
         updateUI();
     } else if(type === 'inn') {
-        addLog(DATA.STORY_DATA.CHAPTER_1.MSG.NEED_COIN);
-    } else if(type === 'report') {
-        addLog(DATA.STORY_DATA.CHAPTER_1.MSG.REPORT_THANKS, "log-sys");
-        st.tInv -= 3;
-        st.progress = 1; // 進行状況を更新
-        updateUI();
+        addLog("店主「ふざけるな、銀貨を持ってこい」");
+    } else if(type === 'boss') {
+        await window.battle(true);
+        if(st.progress === 3) await playScenario([{name:"システム", text:"【第一章：街道と森 クリア】"}, {name:"カイン", text:"「次の街にいくぞ」"}, {name:"オーエン", text:"「北までとおい」"}]);
     }
 };
 
-// 持ち物画面の開閉
+window.wagonEvent = async () => {
+    await playScenario(DATA.SCENARIO.WAGON_TALK);
+    addLog("警護を引き受けますか？");
+    addLog("<button onclick='confirmWagon(true)'>わかった</button> <button onclick='confirmWagon(false)'>断る</button>");
+};
+
+window.confirmWagon = async (yes) => {
+    if(yes) {
+        await playScenario([{name:"カイン", text:"わかった"}, {name:"ナレーション", text:"オーエンとカインは荷馬車に乗った"}]);
+        st.progress = 2;
+    } else {
+        addLog("カイン「いや、断る」");
+    }
+    updateUI();
+};
+
 window.toggleModal = (show) => {
     const modal = document.getElementById('modal');
-    if(modal) modal.style.display = show ? 'flex' : 'none';
-};
-
-// ページ読み込み完了時の処理
-window.addEventListener('load', () => {
-    updateUI();
-    if(DATA.SCENARIO && DATA.SCENARIO.INTRO) {
-        playScenario(DATA.SCENARIO.INTRO);
+    if(show) {
+        const list = document.getElementById('item-list');
+        list.innerHTML = "";
+        // 所持しているアイテムだけを表示
+        if(st.herb > 0) list.innerHTML += `<div>薬草 x${st.herb}</div>`;
+        if(st.sw > 0) list.innerHTML += `<div>甘味 x${st.sw}</div>`;
+        if(st.boss_drop_a > 0) list.innerHTML += `<div>ボスの落とし物A x${st.boss_drop_a}</div>`;
+        modal.style.display = 'flex';
+    } else {
+        modal.style.display = 'none';
     }
-});
+};
