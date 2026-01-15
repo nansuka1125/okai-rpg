@@ -2,41 +2,32 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>CAIN -宿屋と銀貨-</title>
+    <title>CAIN</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="game-container">
-        <header>
-            <div id="m-title">目的</div>
-            <div id="m-count">倉庫</div>
-        </header>
         <div id="status-area">
-            <div id="c-lv">Lv.1 CAIN</div>
-            <div class="hp-container">
-                <span id="hp-values">120 / 120</span>
-                <div id="h-bar" style="width:100%; background:#444; height:10px;">
-                    <div id="h-fill" style="width:100%; background:red; height:10px;"></div>
-                </div>
+            <div id="hp-values">120/120</div>
+            <div id="h-bar" style="width:100%; background:#333; height:10px;">
+                <div id="h-fill" style="width:100%; background:red; height:10px;"></div>
             </div>
         </div>
-        <div id="log-container" style="height:300px; overflow-y:scroll; background:#eee; margin:10px 0;">
-            <div id="log"></div>
-        </div>
+        <div id="log" style="height:400px; overflow-y:scroll; background:#fff; border:1px solid #ccc; margin:10px; padding:10px;"></div>
+        <div id="dist-ui">距離</div>
         <div id="ui-area">
-            <div id="dist-ui">距離表示</div>
             <div id="normal-btns">
-                <button onclick="act('move', 'fwd')">目的地へ進む</button>
-                <button onclick="act('move', 'back')">拠点へ戻る</button>
+                <button onclick="act('move', 'fwd')">目的地へ</button>
+                <button onclick="act('move', 'back')">拠点へ</button>
             </div>
             <button id="btn-inn" onclick="act('inn')" style="display:none;"></button>
-            <button id="btn-report" onclick="act('report')" style="display:none;">銀貨を納品する</button>
-            <button id="btn-boss" onclick="act('boss')" style="display:none;">深部の魔物を討伐</button>
+            <button id="btn-report" onclick="act('report')" style="display:none;">銀貨を納品</button>
+            <button id="btn-boss" onclick="act('boss')" style="display:none;">ボス</button>
         </div>
     </div>
-<script src="data_common.js"></script>
-<script src="data_ch1.js"></script>
-<script src="battle.js"></script>
-<script src="game.js"></script>
+    <script src="data_common.js"></script>
+    <script src="data_ch1.js"></script>
+    <script src="battle.js"></script>
+    <script src="game.js"></script>
 </body>
 </html>
