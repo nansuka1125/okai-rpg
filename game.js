@@ -11,6 +11,10 @@ const updateUI = () => {
     const hpText = document.getElementById('hp-values');
     if(hpText) hpText.innerText = `${Math.floor(st.c_h)} / ${st.c_mh}`;
 
+    // 倉庫の蓄え表示
+    const mCount = document.getElementById('m-count');
+    if(mCount) mCount.innerText = `倉庫の蓄え: ${st.tInv} / ${chData.goal_coins}`;
+
     // 距離の更新
     const distUI = document.getElementById('dist-ui');
     if(distUI) {
@@ -25,7 +29,7 @@ const updateUI = () => {
     if(normalBtns) normalBtns.style.display = idle ? "grid" : "none";
 
     const atBase = (st.dist === 0);
-    const canReport = (st.tInv >= 3 && st.progress === 0);
+    const canReport = (st.tInv >= chData.goal_coins && st.progress === 0);
     
     const btnInn = document.getElementById('btn-inn');
     if(btnInn) {
@@ -59,16 +63,10 @@ const playScenario = async (scenarioArray) => {
     updateUI();
     for (const msg of scenarioArray) {
         await new Promise(r => setTimeout(r, msg.delay || 500));
-        addLog(`${msg.name}：${msg.text}`);
+        addLog(`<b>${msg.name}</b>：${msg.text}`);
     }
     st.inEvent = false;
     updateUI();
-};
-
-// モーダル（持ち物画面）の開閉
-window.toggleModal = (show) => {
-    const modal = document.getElementById('modal');
-    if(modal) modal.style.display = show ? 'flex' : 'none';
 };
 
 // ボタンを押した時の動作
@@ -86,19 +84,31 @@ window.act = async function(type, arg) {
         if(event) {
             await playScenario(event);
         } else if(Math.random() < 0.3 && st.dist > 0 && st.dist < 10) {
-            // battle() 関数が未定義の場合はエラーになるため一旦ログのみ
-            addLog("敵の気配を感じた！ (戦闘準備中)");
+            if(typeof window.battle === 'function') {
+                await window.battle();
+            }
         }
         updateUI();
     } else if(type === 'inn') {
         addLog(DATA.STORY_DATA.CHAPTER_1.MSG.NEED_COIN);
+    } else if(type === 'report') {
+        addLog(DATA.STORY_DATA.CHAPTER_1.MSG.REPORT_THANKS, "log-sys");
+        st.tInv -= 3;
+        st.progress = 1; // 進行状況を更新
+        updateUI();
     }
+};
+
+// 持ち物画面の開閉
+window.toggleModal = (show) => {
+    const modal = document.getElementById('modal');
+    if(modal) modal.style.display = show ? 'flex' : 'none';
 };
 
 // ページ読み込み完了時の処理
 window.addEventListener('load', () => {
     updateUI();
-    if(DATA.SCENARIO.INTRO) {
+    if(DATA.SCENARIO && DATA.SCENARIO.INTRO) {
         playScenario(DATA.SCENARIO.INTRO);
     }
 });
