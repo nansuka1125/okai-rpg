@@ -3,71 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>琥珀の森の探索</title>
+    <title>RPG UI Base</title>
     <style>
-        /* --- CSS: 基本設定・iPhone Safari対策 --- */
+        /* --- 定数定義 --- */
         :root {
-            --bg-color: #1a1a1a;
-            --text-main: #ffffff;
-            --text-info: #aaaaaa;
-            --text-owen: #d196ff;
-            --text-alert: #ff5555;
-            --ui-bg: #333333;
-            --accent: #4a90e2;
-            --safe-area-bottom: 20px;
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --accent-purple: #a333c8;
+            --hp-red: #ff4d4d;
+            --ui-bg: #1a1a1a;
+            --safe-area-bottom: env(safe-area-inset-bottom);
         }
 
+        /* --- 基本レイアウト設定 --- */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Kaku Gothic ProN", sans-serif;
-            background-color: #000;
-            color: var(--text-main);
-            width: 100%;
-            height: 100vh; /* フォールバック */
-            height: 100dvh;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            width: 100vw;
             overflow: hidden; /* 全体スクロール禁止 */
             display: flex;
             flex-direction: column;
         }
 
-        /* --- Header: ステータス --- */
+        /* --- ヘッダーエリア: ステータス表示 --- */
         header {
-            padding: 10px 15px;
-            padding-top: calc(10px + env(safe-area-inset-top));
-            background: var(--ui-bg);
-            border-bottom: 1px solid #444;
-            flex-shrink: 0;
-        }
-
-        .status-row {
+            flex: 0 0 60px;
+            padding-top: env(safe-area-inset-top);
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            padding-left: 15px;
+            padding-right: 15px;
+            background: var(--ui-bg);
+            border-bottom: 1px solid #333;
         }
 
         .hp-container {
-            width: 60%;
-            height: 12px;
-            background: #555;
-            border-radius: 6px;
-            overflow: hidden;
-            position: relative;
+            width: 50%;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        #hp-bar {
-            width: 100%;
+        .hp-bar-bg {
+            flex-grow: 1;
+            height: 12px;
+            background: #333;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .hp-bar-fill {
+            width: 100%; /* 初期値100% */
             height: 100%;
-            background: var(--text-alert);
+            background: var(--hp-red);
             transition: width 0.3s ease;
         }
 
-        /* --- Main: ログエリア --- */
+        .distance-display {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* --- 中央エリア: ログ画面 --- */
         main {
             flex: 1;
             overflow-y: auto;
@@ -75,243 +83,140 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            background-color: #000;
-            -webkit-overflow-scrolling: touch;
+            -webkit-overflow-scrolling: touch; /* iOSスクロール慣性 */
         }
 
-        .log-entry { font-size: 14px; line-height: 1.6; animation: fadeIn 0.2s ease; }
-        .system { color: var(--text-main); }
-        .info { color: var(--text-info); }
-        .owen { color: var(--text-owen); font-weight: bold; }
-        .alert { color: var(--text-alert); font-weight: bold; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- UI Overlay: アイテム画面 --- */
-        #item-screen {
-            display: none;
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 100;
-            padding: 40px 20px;
+        .log-entry {
+            font-size: 15px;
+            line-height: 1.5;
+            word-wrap: break-word;
         }
 
-        /* --- Sub-Menu: 第4のボタンエリア --- */
-        #sub-menu {
-            height: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: rgba(0,0,0,0.5);
-            flex-shrink: 0;
+        .log-purple {
+            color: var(--accent-purple);
         }
 
-        /* --- Footer: 操作系 --- */
+        /* --- フッターエリア: 操作ボタン --- */
         footer {
+            flex: 0 0 auto;
             background: var(--ui-bg);
-            padding: 15px 15px calc(var(--safe-area-bottom) + env(safe-area-inset-bottom));
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            flex-shrink: 0;
-            border-top: 1px solid #444;
+            border-top: 1px solid #333;
+            padding: 10px 10px calc(10px + var(--safe-area-bottom)) 10px;
         }
 
-        button {
-            padding: 12px 5px;
-            border: none;
+        .button-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .action-btn {
+            flex: 1;
+            height: 50px;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
             border-radius: 8px;
-            background: #555;
-            color: #fff;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
         }
 
-        button:active { opacity: 0.7; transform: scale(0.98); }
-        button:disabled { opacity: 0.3; cursor: not-allowed; }
-        .btn-main { background: var(--accent); }
-        .btn-context { background: #e67e22; width: 80%; }
+        .action-btn:active {
+            background: #555;
+        }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="status-row">
-        <span>📍 <span id="loc-name">宿屋</span> (<span id="dist-val">0</span>km)</span>
-        <div class="hp-container"><div id="hp-bar"></div></div>
-        <span>HP: <span id="hp-val">10</span></span>
-    </div>
-</header>
+    <header>
+        <div class="hp-container">
+            <span>HP</span>
+            <div class="hp-bar-bg">
+                <div id="hp-fill" class="hp-bar-fill"></div>
+            </div>
+        </div>
+        <div class="distance-display">
+            地点: <span id="current-distance">0</span> / 10
+        </div>
+    </header>
 
-<main id="game-log">
-    </main>
+    <main id="log-window">
+        </main>
 
-<div id="item-screen">
-    <h2>🎒 所持品</h2>
-    <div id="item-list" style="margin-top:20px;"></div>
-    <button onclick="toggleItems()" style="margin-top:20px; width:100%;">閉じる</button>
-</div>
+    <footer>
+        <div class="button-container">
+            <div class="action-btn" onclick="moveForward()">進む</div>
+            <div class="action-btn" onclick="moveBackward()">戻る</div>
+            <div class="action-btn" onclick="useItem()">アイテム</div>
+        </div>
+    </footer>
 
-<section id="sub-menu">
-    </section>
+    <script>
+        // --- 設定・状態管理 ---
+        const CONFIG = {
+            MAX_DISTANCE: 10,
+            MIN_DISTANCE: 0
+        };
 
-<footer>
-    <button id="btn-back" onclick="move(-1)">⬅️ 戻る</button>
-    <button id="btn-forward" class="btn-main" onclick="move(1)">➡️ 進む</button>
-    <button id="btn-item" onclick="toggleItems()">🎒 道具</button>
-</footer>
+        let state = {
+            distance: 0
+        };
 
-<script>
-// --- CONFIG: 定数管理 ---
-const CONFIG = {
-    INITIAL_HP: 10,
-    INITIAL_MOOD: 50,
-    SAFE_HP: 1,
-    LOCATIONS: { 0: "宿屋", 5: "琥珀の森入口", 10: "深緑の小道" }
-};
+        // --- 要素取得 ---
+        const logWindow = document.getElementById('log-window');
+        const distanceText = document.getElementById('current-distance');
 
-// --- STATE: ゲーム状態 ---
-let state = {
-    hp: CONFIG.INITIAL_HP,
-    mood: CONFIG.INITIAL_MOOD,
-    distance: 0,
-    items: [{ id: 'herb', name: '薬草', count: 2 }],
-    isGameOver: false
-};
+        // --- 関数: ログ追加 ---
+        function addLog(text, isOwen = false) {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry' + (isOwen ? ' log-purple' : '');
+            entry.textContent = text;
+            logWindow.appendChild(entry);
 
-// --- UI: 表示更新系 ---
-function updateUI() {
-    document.getElementById('hp-val').textContent = state.hp;
-    document.getElementById('dist-val').textContent = state.distance;
-    document.getElementById('hp-bar').style.width = (state.hp / CONFIG.INITIAL_HP * 100) + "%";
-    document.getElementById('loc-name').textContent = CONFIG.LOCATIONS[state.distance] || "琥珀の森";
-
-    const btnForward = document.getElementById('btn-forward');
-    const btnBack = document.getElementById('btn-back');
-
-    if (state.hp <= CONFIG.SAFE_HP) {
-        btnForward.disabled = true;
-        btnBack.disabled = true;
-        showContextButton("🛌 宿屋へ戻る", resetGame);
-    } else {
-        btnForward.disabled = false;
-        btnBack.disabled = state.distance <= 0;
-        updateContextArea();
-    }
-}
-
-// --- LOG: ログ出力系 ---
-function addLog(text, type = 'system') {
-    const logArea = document.getElementById('game-log');
-    const entry = document.createElement('div');
-    entry.className = `log-entry ${type}`;
-    
-    if (type === 'owen') {
-        entry.textContent = `オーエン「${text}」`;
-    } else {
-        entry.textContent = text;
-    }
-    
-    logArea.appendChild(entry);
-    logArea.scrollTop = logArea.scrollHeight;
-}
-
-// --- LOGIC: 移動処理 ---
-function move(dir) {
-    if (state.hp <= CONFIG.SAFE_HP) return;
-
-    state.distance += dir;
-    if (state.distance < 0) state.distance = 0;
-
-    addLog(`${dir > 0 ? '1km進んだ。' : '1km戻った。'}`, 'system');
-    
-    // 確率でダメージ（シミュレーション）
-    if (Math.random() > 0.7) {
-        let dmg = 2;
-        state.hp = Math.max(CONFIG.SAFE_HP, state.hp - dmg);
-        addLog(`魔物に襲われた！ ${dmg}のダメージ！`, 'alert');
-        if (state.hp === CONFIG.SAFE_HP) {
-            addLog("もう動けない…宿屋に戻ろう。", 'owen');
+            // 自動スクロール
+            logWindow.scrollTop = logWindow.scrollHeight;
         }
-    } else if (Math.random() > 0.8) {
-        addLog("静かな森の空気が漂っている。", 'info');
-    }
 
-    updateUI();
-}
-
-// --- UI: 第4のボタン制御 ---
-function showContextButton(text, action) {
-    const container = document.getElementById('sub-menu');
-    container.innerHTML = '';
-    const btn = document.createElement('button');
-    btn.className = 'btn-context';
-    btn.textContent = text;
-    btn.onclick = action;
-    container.appendChild(btn);
-}
-
-function updateContextArea() {
-    const container = document.getElementById('sub-menu');
-    container.innerHTML = '';
-    
-    if (state.distance === 0 && state.hp < CONFIG.INITIAL_HP) {
-        showContextButton("💤 休む", resetGame);
-    } else if (state.distance === 5) {
-        showContextButton("💬 オーエンと話す", () => addLog("ここが琥珀の森の入り口だね。", "owen"));
-    }
-}
-
-// --- LOGIC: アイテム管理 ---
-function toggleItems() {
-    const screen = document.getElementById('item-screen');
-    const list = document.getElementById('item-list');
-    
-    if (screen.style.display === 'block') {
-        screen.style.display = 'none';
-    } else {
-        screen.style.display = 'block';
-        list.innerHTML = '';
-        state.items.forEach(item => {
-            const div = document.createElement('div');
-            div.style.padding = "15px";
-            div.style.borderBottom = "1px solid #444";
-            div.textContent = `${item.name} x${item.count}`;
-            div.onclick = () => useItem(item.id);
-            list.appendChild(div);
-        });
-    }
-}
-
-function useItem(id) {
-    const item = state.items.find(i => i.id === id);
-    if (item && item.count > 0) {
-        if (id === 'herb') {
-            state.hp = Math.min(CONFIG.INITIAL_HP, state.hp + 5);
-            item.count--;
-            addLog(`${item.name}を使用した。HPが回復した。`, 'system');
+        // --- 関数: 「進む」の処理 ---
+        function moveForward() {
+            if (state.distance < CONFIG.MAX_DISTANCE) {
+                state.distance++;
+                updateUI();
+                addLog("1歩進んだ。");
+            } else {
+                addLog("これ以上先へは進めない。");
+            }
         }
-        toggleItems();
-        updateUI();
-    }
-}
 
-// --- LOGIC: ゲームリセット（宿屋） ---
-function resetGame() {
-    state.hp = CONFIG.INITIAL_HP;
-    state.distance = 0;
-    addLog("宿屋でゆっくり休んだ。HPが全回復した。", "system");
-    updateUI();
-}
+        // --- 関数: 「戻る」の処理 ---
+        function moveBackward() {
+            if (state.distance > CONFIG.MIN_DISTANCE) {
+                state.distance--;
+                updateUI();
+                addLog("1歩戻った。");
+            } else {
+                addLog("これ以上戻れない。");
+            }
+        }
 
-// --- INIT: 初期化 ---
-window.onload = () => {
-    addLog("カインとオーエンの旅が始まる。", "info");
-    updateUI();
-};
-</script>
+        // --- 関数: 「アイテム」の処理 ---
+        function useItem() {
+            addLog("オーエン『今は何も持ってないよ』", true);
+        }
 
+        // --- 関数: UIの更新 ---
+        function updateUI() {
+            distanceText.textContent = state.distance;
+        }
+
+        // 初期化メッセージ
+        window.onload = () => {
+            addLog("探索を開始した。");
+        };
+    </script>
 </body>
 </html>
