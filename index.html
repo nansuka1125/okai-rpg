@@ -9,7 +9,7 @@
 <body>
     <div id="game-container">
         <header>
-            <div id="m-title">目的：銀貨を3枚持ち帰れ</div>
+            <div id="m-title">目的：銀貨を3枚納品せよ</div>
             <div id="m-count">倉庫の蓄え: 0 / 3</div>
         </header>
 
@@ -40,7 +40,7 @@
 
             <button id="btn-boss" class="special-btn" onclick="act('boss')" style="display:none;">深部の魔物を討伐</button>
             <button id="btn-inn" class="special-btn" onclick="act('inn')" style="display:none;">宿屋へ入る</button>
-            <button id="btn-report" class="special-btn" onclick="act('report')" style="display:none;">騎士団へ報告</button>
+            <button id="btn-report" class="special-btn" onclick="act('report')" style="display:none;">銀貨を納品する</button>
             <button id="btn-next" class="special-btn" onclick="act('next_stage')" style="display:none; background:#2980b9;">次の章へ</button>
         </div>
     </div>
@@ -58,7 +58,8 @@
         </div>
     </div>
 
-<script src="data.js"></script>
+<script src="data_common.js"></script>
+<script src="data_ch1.js"></script>
 <script src="battle.js"></script>
 <script src="game.js"></script>
 
