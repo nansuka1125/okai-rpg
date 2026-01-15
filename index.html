@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>RPG UI Base</title>
+    <title>RPG_UI_Base</title>
     <style>
-        /* --- 定数定義 --- */
+        /* --- CSS変数定義: 定数管理 --- */
         :root {
             --bg-color: #000000;
             --text-color: #ffffff;
             --accent-purple: #a333c8;
             --hp-red: #ff4d4d;
             --ui-bg: #1a1a1a;
+            --border-color: #333333;
+            /* iPhoneセーフエリア対応 */
             --safe-area-bottom: env(safe-area-inset-bottom);
         }
 
@@ -20,43 +22,40 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Kaku Gothic ProN", sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
+            width: 100%;
             height: 100vh;
-            width: 100vw;
-            overflow: hidden; /* 全体スクロール禁止 */
+            height: 100dvh; /* 動的ビューポート対応 */
+            overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
-        /* --- ヘッダーエリア: ステータス表示 --- */
+        /* --- ヘッダー: ステータスエリア --- */
         header {
             flex: 0 0 60px;
-            padding-top: env(safe-area-inset-top);
+            padding: 10px 15px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-left: 15px;
-            padding-right: 15px;
             background: var(--ui-bg);
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--border-color);
+            padding-top: env(safe-area-inset-top);
         }
 
         .hp-container {
-            width: 50%;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            flex: 1;
+            max-width: 200px;
         }
 
         .hp-bar-bg {
-            flex-grow: 1;
+            width: 100%;
             height: 12px;
             background: #333;
             border-radius: 6px;
@@ -64,7 +63,7 @@
         }
 
         .hp-bar-fill {
-            width: 100%; /* 初期値100% */
+            width: 100%; /* 初期値MAX */
             height: 100%;
             background: var(--hp-red);
             transition: width 0.3s ease;
@@ -73,9 +72,10 @@
         .distance-display {
             font-size: 14px;
             font-weight: bold;
+            margin-left: 15px;
         }
 
-        /* --- 中央エリア: ログ画面 --- */
+        /* --- 中央: ログ表示エリア --- */
         main {
             flex: 1;
             overflow-y: auto;
@@ -83,7 +83,8 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            -webkit-overflow-scrolling: touch; /* iOSスクロール慣性 */
+            background: var(--bg-color);
+            scroll-behavior: smooth;
         }
 
         .log-entry {
@@ -92,30 +93,27 @@
             word-wrap: break-word;
         }
 
-        .log-purple {
+        .log-owen {
             color: var(--accent-purple);
+            font-weight: bold;
         }
 
-        /* --- フッターエリア: 操作ボタン --- */
+        /* --- フッター: 操作エリア --- */
         footer {
             flex: 0 0 auto;
             background: var(--ui-bg);
-            border-top: 1px solid #333;
-            padding: 10px 10px calc(10px + var(--safe-area-bottom)) 10px;
-        }
-
-        .button-container {
+            border-top: 1px solid var(--border-color);
             display: flex;
             gap: 10px;
-            justify-content: center;
+            padding: 15px 15px calc(15px + var(--safe-area-bottom));
         }
 
-        .action-btn {
+        .btn {
             flex: 1;
             height: 50px;
             background: #333;
+            border: 1px solid #444;
             color: white;
-            border: 1px solid #555;
             border-radius: 8px;
             font-size: 16px;
             font-weight: bold;
@@ -125,8 +123,9 @@
             cursor: pointer;
         }
 
-        .action-btn:active {
+        .btn:active {
             background: #555;
+            transform: scale(0.98);
         }
     </style>
 </head>
@@ -134,88 +133,98 @@
 
     <header>
         <div class="hp-container">
-            <span>HP</span>
+            <div style="font-size: 10px; margin-bottom: 2px;">CAIN HP</div>
             <div class="hp-bar-bg">
-                <div id="hp-fill" class="hp-bar-fill"></div>
+                <div id="hpFill" class="hp-bar-fill"></div>
             </div>
         </div>
         <div class="distance-display">
-            地点: <span id="current-distance">0</span> / 10
+            地点: <span id="distCurrent">0</span> / <span id="distMax">10</span>
         </div>
     </header>
 
-    <main id="log-window">
-        </main>
+    <main id="logContainer">
+        <div class="log-entry">探索を開始した。</div>
+    </main>
 
     <footer>
-        <div class="button-container">
-            <div class="action-btn" onclick="moveForward()">進む</div>
-            <div class="action-btn" onclick="moveBackward()">戻る</div>
-            <div class="action-btn" onclick="useItem()">アイテム</div>
-        </div>
+        <button class="btn" onclick="gameAction.move(1)">進む</button>
+        <button class="btn" onclick="gameAction.move(-1)">戻る</button>
+        <button class="btn" onclick="gameAction.useItem()">アイテム</button>
     </footer>
 
     <script>
-        // --- 設定・状態管理 ---
+        // --- 定数・設定管理 ---
         const CONFIG = {
             MAX_DISTANCE: 10,
             MIN_DISTANCE: 0
         };
 
-        let state = {
-            distance: 0
+        // --- 状態管理 ---
+        let gameState = {
+            currentDistance: 0,
+            cainHP: 100
         };
 
-        // --- 要素取得 ---
-        const logWindow = document.getElementById('log-window');
-        const distanceText = document.getElementById('current-distance');
+        // --- UI操作モジュール ---
+        const uiControl = {
+            // ログの追加
+            addLog: function(text, isOwen = false) {
+                const container = document.getElementById('logContainer');
+                if (!container) return;
 
-        // --- 関数: ログ追加 ---
-        function addLog(text, isOwen = false) {
-            const entry = document.createElement('div');
-            entry.className = 'log-entry' + (isOwen ? ' log-purple' : '');
-            entry.textContent = text;
-            logWindow.appendChild(entry);
+                const entry = document.createElement('div');
+                entry.className = isOwen ? 'log-entry log-owen' : 'log-entry';
+                entry.textContent = text;
+                
+                container.appendChild(entry);
+                
+                // 最下部へスクロール
+                container.scrollTop = container.scrollHeight;
+            },
 
-            // 自動スクロール
-            logWindow.scrollTop = logWindow.scrollHeight;
-        }
-
-        // --- 関数: 「進む」の処理 ---
-        function moveForward() {
-            if (state.distance < CONFIG.MAX_DISTANCE) {
-                state.distance++;
-                updateUI();
-                addLog("1歩進んだ。");
-            } else {
-                addLog("これ以上先へは進めない。");
+            // 距離表示の更新
+            updateDistance: function(val) {
+                const el = document.getElementById('distCurrent');
+                if (el) el.textContent = val;
             }
-        }
+        };
 
-        // --- 関数: 「戻る」の処理 ---
-        function moveBackward() {
-            if (state.distance > CONFIG.MIN_DISTANCE) {
-                state.distance--;
-                updateUI();
-                addLog("1歩戻った。");
-            } else {
-                addLog("これ以上戻れない。");
+        // --- ゲーム論理モジュール ---
+        const gameAction = {
+            // --- move: 移動処理 ---
+            move: function(step) {
+                const nextDist = gameState.currentDistance + step;
+
+                // 範囲外チェック
+                if (nextDist < CONFIG.MIN_DISTANCE) {
+                    uiControl.addLog("これ以上戻れない。");
+                    return;
+                }
+                if (nextDist > CONFIG.MAX_DISTANCE) {
+                    uiControl.addLog("目的地に到着している。");
+                    return;
+                }
+
+                gameState.currentDistance = nextDist;
+                uiControl.updateDistance(gameState.currentDistance);
+
+                if (step > 0) {
+                    uiControl.addLog("1歩進んだ。");
+                } else {
+                    uiControl.addLog("1歩戻った。");
+                }
+            },
+
+            // --- useItem: アイテム使用処理 ---
+            useItem: function() {
+                uiControl.addLog("オーエン『今は何も持ってないよ』", true);
             }
-        }
+        };
 
-        // --- 関数: 「アイテム」の処理 ---
-        function useItem() {
-            addLog("オーエン『今は何も持ってないよ』", true);
-        }
-
-        // --- 関数: UIの更新 ---
-        function updateUI() {
-            distanceText.textContent = state.distance;
-        }
-
-        // 初期化メッセージ
+        // 初期化時のスクロール位置調整
         window.onload = () => {
-            addLog("探索を開始した。");
+            document.getElementById('logContainer').scrollTop = 0;
         };
     </script>
 </body>
