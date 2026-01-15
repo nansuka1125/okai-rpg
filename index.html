@@ -2,66 +2,41 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CAIN -宿屋と銀貨-</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="game-container">
         <header>
-            <div id="m-title">目的：銀貨を3枚納品せよ</div>
-            <div id="m-count">倉庫の蓄え: 0 / 3</div>
+            <div id="m-title">目的</div>
+            <div id="m-count">倉庫</div>
         </header>
-
         <div id="status-area">
             <div id="c-lv">Lv.1 CAIN</div>
             <div class="hp-container">
-                <div class="hp-text-wrapper">
-                    HP: <span id="hp-values">120 / 120</span>
-                </div>
-                <div id="h-bar" class="bar-container">
-                    <div id="h-fill" class="bar-fill"></div>
+                <span id="hp-values">120 / 120</span>
+                <div id="h-bar" style="width:100%; background:#444; height:10px;">
+                    <div id="h-fill" style="width:100%; background:red; height:10px;"></div>
                 </div>
             </div>
         </div>
-
-        <div id="log-container">
+        <div id="log-container" style="height:300px; overflow-y:scroll; background:#eee; margin:10px 0;">
             <div id="log"></div>
         </div>
-
         <div id="ui-area">
-            <div id="dist-ui">宿屋まで: 0km / 目的地まで: 10km</div>
-            
-            <div id="normal-btns" class="btn-grid">
-                <button onclick="act('move', 'fwd')">探索を進める</button>
-                <button onclick="act('move', 'back')">宿屋へ戻る</button>
-                <button onclick="toggleModal(true)">所持品</button>
+            <div id="dist-ui">距離表示</div>
+            <div id="normal-btns">
+                <button onclick="act('move', 'fwd')">目的地へ進む</button>
+                <button onclick="act('move', 'back')">拠点へ戻る</button>
             </div>
-
-            <button id="btn-boss" class="special-btn" onclick="act('boss')" style="display:none;">深部の魔物を討伐</button>
-            <button id="btn-inn" class="special-btn" onclick="act('inn')" style="display:none;">宿屋へ入る</button>
-            <button id="btn-report" class="special-btn" onclick="act('report')" style="display:none;">銀貨を納品する</button>
-            <button id="btn-next" class="special-btn" onclick="act('next_stage')" style="display:none; background:#2980b9;">次の章へ</button>
+            <button id="btn-inn" onclick="act('inn')" style="display:none;"></button>
+            <button id="btn-report" onclick="act('report')" style="display:none;">銀貨を納品する</button>
+            <button id="btn-boss" onclick="act('boss')" style="display:none;">深部の魔物を討伐</button>
         </div>
     </div>
-
-    <div id="modal" class="modal-overlay" style="display:none;">
-        <div class="modal-content">
-            <h3>所持品</h3>
-            <div id="item-list"></div>
-            <div class="btn-grid" style="margin-top:15px;">
-                <button onclick="act('use_hb')">薬草</button>
-                <button onclick="act('use_sw')">甘味</button>
-                <button onclick="act('use_db')" style="background:#4b4b4b;">《猛毒》</button>
-                <button onclick="toggleModal(false)" style="grid-column: span 3; background:#7f8c8d;">閉じる</button>
-            </div>
-        </div>
-    </div>
-
 <script src="data_common.js"></script>
 <script src="data_ch1.js"></script>
 <script src="battle.js"></script>
 <script src="game.js"></script>
-
 </body>
 </html>
