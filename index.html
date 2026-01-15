@@ -1,33 +1,12 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>CAIN</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div id="game-container">
-        <div id="status-area">
-            <div id="hp-values">120/120</div>
-            <div id="h-bar" style="width:100%; background:#333; height:10px;">
-                <div id="h-fill" style="width:100%; background:red; height:10px;"></div>
-            </div>
-        </div>
-        <div id="log" style="height:400px; overflow-y:scroll; background:#fff; border:1px solid #ccc; margin:10px; padding:10px;"></div>
-        <div id="dist-ui">距離</div>
-        <div id="ui-area">
-            <div id="normal-btns">
-                <button onclick="act('move', 'fwd')">目的地へ</button>
-                <button onclick="act('move', 'back')">拠点へ</button>
-            </div>
-            <button id="btn-inn" onclick="act('inn')" style="display:none;"></button>
-            <button id="btn-report" onclick="act('report')" style="display:none;">銀貨を納品</button>
-            <button id="btn-boss" onclick="act('boss')" style="display:none;">ボス</button>
-        </div>
+<div id="ui-area">
+    <div id="dist-ui" style="margin-bottom:10px; font-size:14px; color:#666;"></div>
+    
+    <div id="normal-btns" class="btn-grid">
+        <button onclick="act('move', 'fwd')">目的地へ</button>
+        <button onclick="act('move', 'back')">拠点へ</button>
     </div>
-    <script src="data_common.js"></script>
-    <script src="data_ch1.js"></script>
-    <script src="battle.js"></script>
-    <script src="game.js"></script>
-</body>
-</html>
+
+    <button id="btn-inn" onclick="act('inn')" style="display:none; width:100%; margin-top:10px;"></button>
+    <button id="btn-report" onclick="act('report')" style="display:none; width:100%; margin-top:10px; background:#27ae60;">銀貨を納品</button>
+    <button id="btn-boss" onclick="act('boss')" style="display:none; width:100%; margin-top:10px; background:#c0392b;">ボスと戦う</button>
+</div>
