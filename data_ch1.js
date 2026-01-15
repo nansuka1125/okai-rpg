@@ -1,3 +1,4 @@
+// 第1章専用のデータを追加
 DATA.MOVE_LOGS = ["琥珀の木漏れ日の中を黙々と歩く。"];
 
 DATA.OWEN_QUOTES = {
