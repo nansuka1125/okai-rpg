@@ -18,12 +18,8 @@ DATA.STORY_DATA.CHAPTER_1 = {
         HEAL_SWEETS: "甘味を食べた。オーエンの瞳にわずかな静謐が宿る。"
     },
     enemies_day: [
-        { name: "琥珀ネズミ", hp: 15, atk: 8, exp: 10, coin: 0.7, poison: 0 },
-        { name: "琥珀樹の幼体", hp: 40, atk: 10, exp: 25, coin: 0.1, poison: 0.25 }
-    ],
-    enemies_night: [
-        { name: "樹脂まとい", hp: 70, atk: 15, exp: 40, coin: 0.2, poison: 0 },
-        { name: "森迷いの影", hp: 30, atk: 10, exp: 150, coin: 0.5, poison: 0 }
+        { name: "琥珀ネズミ", hp: 15, atk: 8, exp: 10, coin: 1, poison: 0 },
+        { name: "琥珀樹の幼体", hp: 40, atk: 10, exp: 25, coin: 1, poison: 0.25 }
     ],
     boss: { name: "琥珀の守護獣", hp: 200, atk: 25, exp: 500, coin: 0, poison: 0 },
     EVENTS: {
