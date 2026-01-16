@@ -36,44 +36,41 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            font-size: 16px; /* 全体フォントサイズ向上 */
+            font-size: 16px; /* iPhone視認性向上 */
         }
 
-        /* --- ロケーションヘッダー --- */
-        #locationHeader {
-            flex: 0 0 40px;
-            background: rgba(0, 0, 0, 0.7);
+        /* --- チャプターヘッダー --- */
+        #chapterHeader {
+            flex: 0 0 35px;
+            background: #000;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
-            letter-spacing: 2px;
-            color: #ccc;
+            font-size: 12px;
+            letter-spacing: 1px;
+            color: #888;
             padding-top: env(safe-area-inset-top);
             z-index: 10;
         }
 
         /* --- ステータスエリア --- */
         header {
-            flex: 0 0 70px;
-            padding: 10px 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            flex: 0 0 auto;
+            padding: 12px 15px;
             background: var(--ui-bg);
             border-bottom: 1px solid var(--border-color);
         }
 
         .status-info {
-            font-size: 12px;
-            margin-bottom: 4px;
+            font-size: 13px;
+            margin-bottom: 6px;
             font-weight: bold;
         }
 
         .hp-container {
-            flex: 1;
-            max-width: 220px;
+            width: 100%;
+            max-width: 100%;
         }
 
         .hp-bar-bg {
@@ -91,10 +88,15 @@
             transition: width 0.3s ease;
         }
 
-        .distance-display {
-            font-size: 15px;
+        /* --- ロケーションバー --- */
+        #locationBar {
+            background: #111;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 18px;
             font-weight: bold;
-            margin-left: 15px;
+            border-bottom: 1px solid var(--border-color);
+            color: #eee;
         }
 
         /* --- 中央: ログ表示エリア --- */
@@ -104,25 +106,20 @@
             padding: 15px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
             background: var(--bg-color);
             scroll-behavior: smooth;
         }
 
         .log-entry {
-            font-size: 16px; /* 視認性向上 */
+            font-size: 16px;
             line-height: 1.6;
             word-wrap: break-word;
         }
 
-        .log-location-change {
-            color: #aaa;
-            text-align: center;
-            padding: 10px 0;
+        .log-location-marker {
+            color: #888;
             font-weight: bold;
-            border-top: 1px solid #222;
-            border-bottom: 1px solid #222;
-            margin: 10px 0;
         }
 
         .log-owen {
@@ -130,24 +127,24 @@
             font-weight: bold;
         }
 
-        /* --- フッター: 操作エリア --- */
+        /* --- フッター: 2段構成操作エリア --- */
         footer {
             flex: 0 0 auto;
             background: var(--ui-bg);
             border-top: 1px solid var(--border-color);
-            display: flex;
-            gap: 10px;
-            padding: 15px 15px calc(15px + var(--safe-area-bottom));
+            padding: 10px 10px calc(10px + var(--safe-area-bottom));
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 8px;
         }
 
         .btn {
-            flex: 1;
-            height: 55px; /* サイズ微増 */
+            height: 54px;
             background: #333;
             border: 1px solid #444;
             color: white;
             border-radius: 8px;
-            font-size: 17px;
+            font-size: 16px;
             font-weight: bold;
             display: flex;
             align-items: center;
@@ -156,8 +153,12 @@
         }
 
         .btn:disabled {
-            opacity: 0.3;
+            opacity: 0.25;
             cursor: not-allowed;
+        }
+
+        .btn:active:not(:disabled) {
+            background: #444;
         }
 
         /* --- アイテムモーダル --- */
@@ -192,61 +193,56 @@
             border-bottom: 1px solid var(--border-color);
             text-align: center;
             font-weight: bold;
-            font-size: 18px;
         }
 
         .item-list {
             flex: 1;
             overflow-y: auto;
-            padding: 15px;
+            padding: 10px;
         }
 
         .item-row {
             padding: 15px;
             border: 1px solid #333;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             border-radius: 8px;
             background: #222;
-            font-size: 16px;
         }
 
         .modal-footer {
             padding: 15px;
             border-top: 1px solid var(--border-color);
-            background: #111;
         }
 
         #itemActionArea {
-            min-height: 60px;
-            margin-bottom: 15px;
-            font-size: 15px;
+            min-height: 50px;
+            margin-bottom: 10px;
             text-align: center;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-    <div id="locationHeader">LOADING...</div>
+    <div id="chapterHeader">Chapter 1 銀貨と宿屋</div>
 
     <header>
+        <div id="statusInfo" class="status-info">カイン Lv.1 [ 100 / 100 ]</div>
         <div class="hp-container">
-            <div id="statusInfo" class="status-info">カイン Lv.1 [ 100 / 100 ]</div>
             <div class="hp-bar-bg">
                 <div id="hpFill" class="hp-bar-fill"></div>
             </div>
         </div>
-        <div class="distance-display">
-            地点: <span id="distCurrent">0</span> / <span id="distMax">10</span>
-        </div>
     </header>
 
-    <main id="logContainer">
-        <div class="log-entry">探索を開始した。</div>
-    </main>
+    <div id="locationBar">―― 場所名 ――</div>
+
+    <main id="logContainer"></main>
 
     <footer>
         <button id="btnMoveForward" class="btn" onclick="gameAction.move(1)">進む</button>
         <button id="btnMoveBack" class="btn" onclick="gameAction.move(-1)">戻る</button>
+        <button id="btnTalk" class="btn" onclick="gameAction.talk()">話す</button>
         <button id="btnItem" class="btn" onclick="gameAction.useItem()">アイテム</button>
     </footer>
 
@@ -255,10 +251,8 @@
             <div class="modal-header">所持品</div>
             <div id="itemList" class="item-list"></div>
             <div class="modal-footer">
-                <div id="itemActionArea">アイテムを選択してください</div>
-                <div class="modal-btns">
-                    <button class="btn" onclick="uiControl.closeModal()">閉じる</button>
-                </div>
+                <div id="itemActionArea"></div>
+                <button class="btn" style="width:100%" onclick="uiControl.closeModal()">閉じる</button>
             </div>
         </div>
     </div>
@@ -274,12 +268,16 @@
 
         // --- ロケーションデータ ---
         const LOCATIONS = {
-            get: function(dist) {
-                if (dist === 0) return { name: "宿屋前", desc: "出発の準備は整った。" };
-                if (dist <= 6) return { name: "琥珀の森", desc: "鳥の鳴き声が聞こえる…" };
-                return { name: "森の深層", desc: "空気が湿ってきた…" };
-            }
+            0: { name: "宿屋前", desc: "出発の準備は整った。", hasTarget: true },
+            1: { name: "琥珀の森", desc: "鳥の鳴き声が聞こえる…", hasTarget: false },
+            7: { name: "森の深層", desc: "空気が湿ってきた…", hasTarget: true }, // 7m地点にイベント例
         };
+
+        function getLocData(dist) {
+            const keys = Object.keys(LOCATIONS).map(Number).sort((a, b) => b - a);
+            const key = keys.find(k => dist >= k);
+            return LOCATIONS[key];
+        }
 
         // --- 状態管理 ---
         let gameState = {
@@ -288,7 +286,7 @@
             cainHP: 100,
             cainMaxHP: 100,
             inventory: { silverCoin: 0, herb: 1 },
-            flags: { isDelivered: false, heardCarriageInfo: false, isNight: false }
+            flags: { isDelivered: false }
         };
 
         // --- UI操作モジュール ---
@@ -296,12 +294,10 @@
             // --- addLog: ログの追加 ---
             addLog: function(text, type = "") {
                 const container = document.getElementById('logContainer');
-                if (!container) return;
                 const entry = document.createElement('div');
-                if (type === "owen") entry.className = 'log-entry log-owen';
-                else if (type === "location") entry.className = 'log-entry log-location-change';
-                else entry.className = 'log-entry';
-                
+                entry.className = 'log-entry';
+                if (type === "owen") entry.classList.add('log-owen');
+                if (type === "marker") entry.classList.add('log-location-marker');
                 entry.textContent = text;
                 container.appendChild(entry);
                 container.scrollTop = container.scrollHeight;
@@ -309,54 +305,47 @@
 
             // --- updateUI: 全体的なUI更新 ---
             updateUI: function() {
-                // 距離とボタン
-                document.getElementById('distCurrent').textContent = gameState.currentDistance;
-                document.getElementById('btnMoveBack').disabled = (gameState.currentDistance <= CONFIG.MIN_DISTANCE);
+                const loc = getLocData(gameState.currentDistance);
                 
-                // ステータス
-                document.getElementById('statusInfo').textContent = 
-                    `カイン Lv.${gameState.cainLv} [ ${gameState.cainHP} / ${gameState.cainMaxHP} ]`;
-                
-                // HPバー
-                const percentage = Math.max(0, Math.min(100, (gameState.cainHP / gameState.cainMaxHP) * 100));
+                // ヘッダー・ステータス
+                document.getElementById('statusInfo').textContent = `カイン Lv.${gameState.cainLv} [ ${gameState.cainHP} / ${gameState.cainMaxHP} ]`;
+                const percentage = (gameState.cainHP / gameState.cainMaxHP) * 100;
                 document.getElementById('hpFill').style.width = `${percentage}%`;
 
-                // ロケーションヘッダー
-                const loc = LOCATIONS.get(gameState.currentDistance);
-                document.getElementById('locationHeader').textContent = loc.name;
+                // ロケーションバー
+                document.getElementById('locationBar').textContent = `―― ${loc.name} ――`;
+
+                // ボタン制御
+                document.getElementById('btnMoveBack').disabled = (gameState.currentDistance <= CONFIG.MIN_DISTANCE);
+                document.getElementById('btnTalk').disabled = !loc.hasTarget;
             },
 
-            // --- openModal / closeModal: アイテム画面 ---
             openModal: function() {
                 const modal = document.getElementById('itemModal');
-                const listContainer = document.getElementById('itemList');
-                const actionArea = document.getElementById('itemActionArea');
-                listContainer.innerHTML = '';
-                actionArea.textContent = 'アイテムを選択してください';
-
+                const list = document.getElementById('itemList');
+                list.innerHTML = '';
+                document.getElementById('itemActionArea').textContent = 'アイテムを選択してください';
+                
                 const items = Object.entries(gameState.inventory).filter(([k, v]) => v > 0);
                 if (items.length === 0) {
-                    listContainer.innerHTML = '<div style="text-align:center; padding:20px;">所持品なし</div>';
+                    list.innerHTML = '<div style="text-align:center; padding:20px;">所持品なし</div>';
                 } else {
                     items.forEach(([key, count]) => {
                         const div = document.createElement('div');
                         div.className = 'item-row';
                         div.textContent = `${CONFIG.ITEM_NAME[key]} (×${count})`;
                         div.onclick = () => uiControl.selectItem(key);
-                        listContainer.appendChild(div);
+                        list.appendChild(div);
                     });
                 }
                 modal.style.display = 'flex';
             },
 
-            selectItem: function(itemKey) {
+            selectItem: function(key) {
                 const area = document.getElementById('itemActionArea');
-                if (itemKey === 'silverCoin') {
-                    area.innerHTML = `3枚集めて宿屋に持ってかないとな`;
-                } else if (itemKey === 'herb') {
-                    area.innerHTML = `…今使うか？<div style="display:flex;gap:10px;margin-top:10px;">
-                        <button class="btn" style="height:35px;" onclick="gameAction.executeHerb()">使う</button>
-                        <button class="btn" style="height:35px;" onclick="uiControl.closeModal()">止める</button></div>`;
+                if (key === 'silverCoin') area.innerHTML = "3枚集めて宿屋に持ってかないとな";
+                if (key === 'herb') {
+                    area.innerHTML = `…今使うか？<br><button class="btn" style="height:35px;margin-top:5px;width:100px" onclick="gameAction.executeHerb()">使う</button>`;
                 }
             },
 
@@ -369,28 +358,33 @@
         const gameAction = {
             // --- move: 移動処理 ---
             move: function(step) {
-                const prevLoc = LOCATIONS.get(gameState.currentDistance).name;
+                const currentLocName = getLocData(gameState.currentDistance).name;
                 const nextDist = gameState.currentDistance + step;
 
                 if (nextDist < CONFIG.MIN_DISTANCE || nextDist > CONFIG.MAX_DISTANCE) return;
 
                 gameState.currentDistance = nextDist;
-                const nextLoc = LOCATIONS.get(gameState.currentDistance);
+                const nextLoc = getLocData(gameState.currentDistance);
 
-                // UIの基本更新
                 uiControl.updateUI();
-                uiControl.addLog(`${gameState.currentDistance}m地点に${step > 0 ? "進んだ" : "戻った"}。`);
+                uiControl.addLog(`${gameState.currentDistance}m地点へ移動した。`);
 
-                // 場所移動演出
-                if (prevLoc !== nextLoc.name) {
+                // エリア境界移動時の演出
+                if (currentLocName !== nextLoc.name) {
                     setTimeout(() => {
-                        uiControl.addLog(`―― ${nextLoc.name} ――`, "location");
-                        setTimeout(() => {
-                            uiControl.addLog(nextLoc.desc);
-                        }, 500);
+                        uiControl.addLog(`―― ${nextLoc.name} ――`, "marker");
+                        uiControl.addLog(nextLoc.desc);
                     }, 1000);
                 }
             },
+
+            talk: function() {
+                const dist = gameState.currentDistance;
+                if (dist === 0) uiControl.addLog("宿屋の主人『気をつけてな、カイン。』");
+                else if (dist >= 7) uiControl.addLog("（誰かが隠れているようだ…）");
+            },
+
+            useItem: function() { uiControl.openModal(); },
 
             executeHerb: function() {
                 if (gameState.inventory.herb > 0) {
@@ -398,16 +392,14 @@
                     gameState.cainHP = gameState.cainMaxHP;
                     uiControl.updateUI();
                     uiControl.closeModal();
-                    uiControl.addLog("薬草を使った。HPが全回復した。");
+                    uiControl.addLog("薬草を使い、HPが全回復した。");
                 }
-            },
-
-            useItem: function() { uiControl.openModal(); }
+            }
         };
 
         // --- 初期化 ---
         window.onload = () => {
-            document.getElementById('distMax').textContent = CONFIG.MAX_DISTANCE;
+            uiControl.addLog("探索を開始した。");
             uiControl.updateUI();
         };
     </script>
