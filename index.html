@@ -23,7 +23,7 @@
             margin: 0;
             padding: 0;
             -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation; /* ダブルタップズーム防止 */
+            touch-action: manipulation;
         }
 
         body {
@@ -36,10 +36,10 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            font-size: 16px; /* iPhone視認性向上 */
+            font-size: 16px;
         }
 
-        /* --- チャプターヘッダー --- */
+        /* --- ヘッダー・ステータス --- */
         #chapterHeader {
             flex: 0 0 35px;
             background: #000;
@@ -48,18 +48,14 @@
             align-items: center;
             justify-content: center;
             font-size: 12px;
-            letter-spacing: 1px;
             color: #888;
             padding-top: env(safe-area-inset-top);
-            z-index: 10;
         }
 
-        /* --- ステータスエリア --- */
         header {
             flex: 0 0 auto;
-            padding: 12px 15px;
+            padding: 12px 15px 8px;
             background: var(--ui-bg);
-            border-bottom: 1px solid var(--border-color);
         }
 
         .status-info {
@@ -68,16 +64,11 @@
             font-weight: bold;
         }
 
-        .hp-container {
-            width: 100%;
-            max-width: 100%;
-        }
-
         .hp-bar-bg {
             width: 100%;
-            height: 14px;
+            height: 12px;
             background: #333;
-            border-radius: 7px;
+            border-radius: 6px;
             overflow: hidden;
         }
 
@@ -88,7 +79,41 @@
             transition: width 0.3s ease;
         }
 
-        /* --- ロケーションバー --- */
+        /* --- プログレスライン --- */
+        #progressContainer {
+            background: var(--ui-bg);
+            padding: 5px 15px 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #aaa;
+            margin-bottom: 4px;
+        }
+
+        .progress-track {
+            position: relative;
+            width: 100%;
+            height: 2px;
+            background: #444;
+        }
+
+        #progressMarker {
+            position: absolute;
+            top: 50%;
+            left: 0%;
+            width: 10px;
+            height: 10px;
+            background: var(--text-color);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: left 0.3s ease;
+        }
+
+        /* --- ロケーション表示 --- */
         #locationBar {
             background: #111;
             padding: 10px 0;
@@ -96,10 +121,9 @@
             font-size: 18px;
             font-weight: bold;
             border-bottom: 1px solid var(--border-color);
-            color: #eee;
         }
 
-        /* --- 中央: ログ表示エリア --- */
+        /* --- ログエリア --- */
         main {
             flex: 1;
             overflow-y: auto;
@@ -107,27 +131,29 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            background: var(--bg-color);
-            scroll-behavior: smooth;
         }
 
         .log-entry {
             font-size: 16px;
             line-height: 1.6;
-            word-wrap: break-word;
         }
 
-        .log-location-marker {
-            color: #888;
+        .log-marker { color: #888; font-weight: bold; }
+
+        .inline-btn {
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px;
+            background: var(--accent-purple);
+            color: white;
+            border: none;
+            border-radius: 6px;
             font-weight: bold;
+            text-align: center;
         }
 
-        .log-owen {
-            color: var(--accent-purple);
-            font-weight: bold;
-        }
-
-        /* --- フッター: 2段構成操作エリア --- */
+        /* --- 操作エリア --- */
         footer {
             flex: 0 0 auto;
             background: var(--ui-bg);
@@ -149,76 +175,25 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
         }
 
-        .btn:disabled {
-            opacity: 0.25;
-            cursor: not-allowed;
-        }
+        .btn:disabled { opacity: 0.25; }
 
-        .btn:active:not(:disabled) {
-            background: #444;
-        }
-
-        /* --- アイテムモーダル --- */
+        /* --- モーダル --- */
         #itemModal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: var(--modal-overlay);
             z-index: 100;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            justify-content: center; align-items: center; padding: 20px;
         }
 
         .modal-content {
             background: var(--ui-bg);
             border: 1px solid #444;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 400px;
-            max-height: 80vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .modal-header {
-            padding: 15px;
-            border-bottom: 1px solid var(--border-color);
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .item-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px;
-        }
-
-        .item-row {
-            padding: 15px;
-            border: 1px solid #333;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            background: #222;
-        }
-
-        .modal-footer {
-            padding: 15px;
-            border-top: 1px solid var(--border-color);
-        }
-
-        #itemActionArea {
-            min-height: 50px;
-            margin-bottom: 10px;
-            text-align: center;
-            font-size: 14px;
+            border-radius: 12px; width: 100%; max-width: 400px;
+            display: flex; flex-direction: column;
         }
     </style>
 </head>
@@ -228,12 +203,19 @@
 
     <header>
         <div id="statusInfo" class="status-info">カイン Lv.1 [ 100 / 100 ]</div>
-        <div class="hp-container">
-            <div class="hp-bar-bg">
-                <div id="hpFill" class="hp-bar-fill"></div>
-            </div>
-        </div>
+        <div class="hp-bar-bg"><div id="hpFill" class="hp-bar-fill"></div></div>
     </header>
+
+    <div id="progressContainer">
+        <div class="progress-labels">
+            <span>宿屋</span>
+            <span id="progressText">( 0 / 10m )</span>
+            <span>森の深層</span>
+        </div>
+        <div class="progress-track">
+            <div id="progressMarker"></div>
+        </div>
+    </div>
 
     <div id="locationBar">―― 場所名 ――</div>
 
@@ -248,12 +230,10 @@
 
     <div id="itemModal">
         <div class="modal-content">
-            <div class="modal-header">所持品</div>
-            <div id="itemList" class="item-list"></div>
-            <div class="modal-footer">
-                <div id="itemActionArea"></div>
-                <button class="btn" style="width:100%" onclick="uiControl.closeModal()">閉じる</button>
-            </div>
+            <div style="padding:15px; border-bottom:1px solid #333; text-align:center; font-weight:bold;">所持品</div>
+            <div id="itemList" style="padding:10px; max-height:50vh; overflow-y:auto;"></div>
+            <div id="itemActionArea" style="padding:10px; text-align:center; font-size:14px;"></div>
+            <button class="btn" style="margin:10px;" onclick="uiControl.closeModal()">閉じる</button>
         </div>
     </div>
 
@@ -262,22 +242,14 @@
         const CONFIG = {
             MAX_DISTANCE: 10,
             MIN_DISTANCE: 0,
-            MAX_LEVEL: 50,
             ITEM_NAME: { silverCoin: "銀貨", herb: "薬草" }
         };
 
-        // --- ロケーションデータ ---
         const LOCATIONS = {
-            0: { name: "宿屋前", desc: "出発の準備は整った。", hasTarget: true },
-            1: { name: "琥珀の森", desc: "鳥の鳴き声が聞こえる…", hasTarget: false },
-            7: { name: "森の深層", desc: "空気が湿ってきた…", hasTarget: true }, // 7m地点にイベント例
+            0: { name: "宿屋前", hasTarget: true, desc: "出発の準備は整った。" },
+            1: { name: "琥珀の森", hasTarget: false, desc: "鳥の鳴き声が聞こえる…" },
+            7: { name: "森の深層", hasTarget: true, desc: "空気が湿ってきた…" }
         };
-
-        function getLocData(dist) {
-            const keys = Object.keys(LOCATIONS).map(Number).sort((a, b) => b - a);
-            const key = keys.find(k => dist >= k);
-            return LOCATIONS[key];
-        }
 
         // --- 状態管理 ---
         let gameState = {
@@ -286,122 +258,133 @@
             cainHP: 100,
             cainMaxHP: 100,
             inventory: { silverCoin: 0, herb: 1 },
-            flags: { isDelivered: false }
+            flags: { isDelivered: false, gotTestCoin: false },
+            isInputLocked: false
         };
 
         // --- UI操作モジュール ---
         const uiControl = {
-            // --- addLog: ログの追加 ---
             addLog: function(text, type = "") {
                 const container = document.getElementById('logContainer');
                 const entry = document.createElement('div');
                 entry.className = 'log-entry';
-                if (type === "owen") entry.classList.add('log-owen');
-                if (type === "marker") entry.classList.add('log-location-marker');
-                entry.textContent = text;
+                if (type === "marker") entry.classList.add('log-marker');
+                entry.innerHTML = text;
                 container.appendChild(entry);
                 container.scrollTop = container.scrollHeight;
             },
 
-            // --- updateUI: 全体的なUI更新 ---
             updateUI: function() {
-                const loc = getLocData(gameState.currentDistance);
+                const loc = this.getLocData(gameState.currentDistance);
                 
-                // ヘッダー・ステータス
+                // ステータス更新
                 document.getElementById('statusInfo').textContent = `カイン Lv.${gameState.cainLv} [ ${gameState.cainHP} / ${gameState.cainMaxHP} ]`;
-                const percentage = (gameState.cainHP / gameState.cainMaxHP) * 100;
-                document.getElementById('hpFill').style.width = `${percentage}%`;
-
-                // ロケーションバー
+                document.getElementById('hpFill').style.width = `${(gameState.cainHP / gameState.cainMaxHP) * 100}%`;
                 document.getElementById('locationBar').textContent = `―― ${loc.name} ――`;
 
+                // プログレスライン更新
+                const ratio = (gameState.currentDistance / CONFIG.MAX_DISTANCE) * 100;
+                document.getElementById('progressMarker').style.left = `${ratio}%`;
+                document.getElementById('progressText').textContent = `( ${gameState.currentDistance} / ${CONFIG.MAX_DISTANCE}m )`;
+
                 // ボタン制御
-                document.getElementById('btnMoveBack').disabled = (gameState.currentDistance <= CONFIG.MIN_DISTANCE);
-                document.getElementById('btnTalk').disabled = !loc.hasTarget;
+                const isLocked = gameState.isInputLocked;
+                document.getElementById('btnMoveForward').disabled = isLocked || (gameState.currentDistance >= CONFIG.MAX_DISTANCE);
+                document.getElementById('btnMoveBack').disabled = isLocked || (gameState.currentDistance <= CONFIG.MIN_DISTANCE);
+                document.getElementById('btnTalk').disabled = isLocked || !loc.hasTarget;
+                document.getElementById('btnItem').disabled = isLocked;
             },
 
-            openModal: function() {
-                const modal = document.getElementById('itemModal');
-                const list = document.getElementById('itemList');
-                list.innerHTML = '';
-                document.getElementById('itemActionArea').textContent = 'アイテムを選択してください';
-                
-                const items = Object.entries(gameState.inventory).filter(([k, v]) => v > 0);
-                if (items.length === 0) {
-                    list.innerHTML = '<div style="text-align:center; padding:20px;">所持品なし</div>';
-                } else {
-                    items.forEach(([key, count]) => {
-                        const div = document.createElement('div');
-                        div.className = 'item-row';
-                        div.textContent = `${CONFIG.ITEM_NAME[key]} (×${count})`;
-                        div.onclick = () => uiControl.selectItem(key);
-                        list.appendChild(div);
-                    });
-                }
-                modal.style.display = 'flex';
+            getLocData: function(dist) {
+                const keys = Object.keys(LOCATIONS).map(Number).sort((a, b) => b - a);
+                return LOCATIONS[keys.find(k => dist >= k)];
             },
 
-            selectItem: function(key) {
-                const area = document.getElementById('itemActionArea');
-                if (key === 'silverCoin') area.innerHTML = "3枚集めて宿屋に持ってかないとな";
-                if (key === 'herb') {
-                    area.innerHTML = `…今使うか？<br><button class="btn" style="height:35px;margin-top:5px;width:100px" onclick="gameAction.executeHerb()">使う</button>`;
-                }
-            },
-
-            closeModal: function() {
-                document.getElementById('itemModal').style.display = 'none';
-            }
+            closeModal: function() { document.getElementById('itemModal').style.display = 'none'; }
         };
 
         // --- ゲーム論理モジュール ---
         const gameAction = {
-            // --- move: 移動処理 ---
             move: function(step) {
-                const currentLocName = getLocData(gameState.currentDistance).name;
-                const nextDist = gameState.currentDistance + step;
+                const prevLoc = uiControl.getLocData(gameState.currentDistance).name;
+                let nextDist = gameState.currentDistance + step;
+
+                // 納品前の10m壁制限
+                if (!gameState.flags.isDelivered && nextDist >= CONFIG.MAX_DISTANCE) {
+                    nextDist = CONFIG.MAX_DISTANCE;
+                    if (gameState.currentDistance === CONFIG.MAX_DISTANCE && step > 0) {
+                        uiControl.addLog("門番『通行証か、納品を済ませるまでは通せないな』");
+                        return;
+                    }
+                }
 
                 if (nextDist < CONFIG.MIN_DISTANCE || nextDist > CONFIG.MAX_DISTANCE) return;
 
                 gameState.currentDistance = nextDist;
-                const nextLoc = getLocData(gameState.currentDistance);
-
                 uiControl.updateUI();
                 uiControl.addLog(`${gameState.currentDistance}m地点へ移動した。`);
 
-                // エリア境界移動時の演出
-                if (currentLocName !== nextLoc.name) {
+                // 銀貨獲得イベント (3m地点)
+                if (gameState.currentDistance === 3 && !gameState.flags.gotTestCoin) {
+                    gameState.flags.gotTestCoin = true;
+                    gameState.inventory.silverCoin += 3;
+                    uiControl.addLog("道端に銀貨が3枚落ちている！カインはそれを拾い上げた。");
+                }
+
+                // 場所移動演出
+                const nextLoc = uiControl.getLocData(gameState.currentDistance);
+                if (prevLoc !== nextLoc.name) {
                     setTimeout(() => {
                         uiControl.addLog(`―― ${nextLoc.name} ――`, "marker");
                         uiControl.addLog(nextLoc.desc);
-                    }, 1000);
+                    }, 800);
                 }
             },
 
             talk: function() {
                 const dist = gameState.currentDistance;
-                if (dist === 0) uiControl.addLog("宿屋の主人『気をつけてな、カイン。』");
-                else if (dist >= 7) uiControl.addLog("（誰かが隠れているようだ…）");
+                if (dist === 0) {
+                    if (gameState.inventory.silverCoin >= 3 && !gameState.flags.isDelivered) {
+                        uiControl.addLog("宿屋の主人『お、銀貨を持ってきてくれたのか！』");
+                        uiControl.addLog('<button class="inline-btn" onclick="gameAction.deliver()">[ 銀貨を3枚納品する ]</button>');
+                        gameState.isInputLocked = true;
+                        uiControl.updateUI();
+                    } else {
+                        uiControl.addLog("宿屋の主人『銀貨を3枚、頼んだぞ。』");
+                    }
+                } else if (dist >= 7) {
+                    uiControl.addLog("（周囲を警戒している…）");
+                }
             },
 
-            useItem: function() { uiControl.openModal(); },
+            deliver: function() {
+                gameState.inventory.silverCoin -= 3;
+                gameState.flags.isDelivered = true;
+                gameState.isInputLocked = false;
+                uiControl.addLog("銀貨を納品した。");
+                uiControl.addLog("宿屋の主人『助かったよ、これで準備がすすめられる！』");
+                uiControl.updateUI();
+            },
 
-            executeHerb: function() {
-                if (gameState.inventory.herb > 0) {
-                    gameState.inventory.herb--;
-                    gameState.cainHP = gameState.cainMaxHP;
-                    uiControl.updateUI();
-                    uiControl.closeModal();
-                    uiControl.addLog("薬草を使い、HPが全回復した。");
+            useItem: function() {
+                const modal = document.getElementById('itemModal');
+                const list = document.getElementById('itemList');
+                list.innerHTML = '';
+                const items = Object.entries(gameState.inventory).filter(([k,v]) => v > 0);
+                if(items.length === 0) list.innerHTML = "所持品なし";
+                else {
+                    items.forEach(([k,v]) => {
+                        const d = document.createElement('div');
+                        d.style.padding = "10px"; d.style.borderBottom = "1px solid #333";
+                        d.textContent = `${CONFIG.ITEM_NAME[k]} (×${v})`;
+                        list.appendChild(d);
+                    });
                 }
+                modal.style.display = 'flex';
             }
         };
 
-        // --- 初期化 ---
-        window.onload = () => {
-            uiControl.addLog("探索を開始した。");
-            uiControl.updateUI();
-        };
+        window.onload = () => { uiControl.addLog("探索を開始した。"); uiControl.updateUI(); };
     </script>
 </body>
 </html>
