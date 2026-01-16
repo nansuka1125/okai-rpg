@@ -6,7 +6,10 @@ const CONFIG = {
     ITEM_DESC: { 
         silverCoin: "宿屋に納品するための銀貨。3枚必要だ。", 
         herb: "傷を癒やす野草。HPを全回復する。" 
-    }
+    },
+    // 追加: バトル設定
+    BATTLE_RATE: 0.3,
+    TEST_ENEMY: { name: "魔界ネズミ", hp: 20, maxHp: 20, atk: 5 }
 };
 
 // --- ロケーションデータ ---
@@ -23,5 +26,8 @@ let gameState = {
     cainHP: 100,
     cainMaxHP: 100,
     inventory: { silverCoin: 0, herb: 1 },
-    flags: { isDelivered: false, gotTestCoin: false }
+    flags: { isDelivered: false, gotTestCoin: false },
+    // 追加: バトル状態
+    isBattling: false,
+    currentEnemy: null
 };
