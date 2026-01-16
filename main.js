@@ -21,16 +21,32 @@ const uiControl = {
         document.getElementById('progressMarker').style.left = `${ratio}%`;
         document.getElementById('progressText').textContent = `( ${gameState.currentDistance} / ${CONFIG.MAX_DISTANCE}m )`;
 
-        // 納品ボタンの制御
+        // 納品ボタンの制御（バトル中は隠す）
         const specialArea = document.getElementById('specialActionContainer');
-        const showDeliver = (gameState.currentDistance === 0 && gameState.inventory.silverCoin >= 3 && !gameState.flags.isDelivered);
+        const showDeliver = (gameState.currentDistance === 0 && gameState.inventory.silverCoin >= 3 && !gameState.flags.isDelivered && !gameState.isBattling);
         specialArea.style.display = showDeliver ? 'block' : 'none';
-        if (showDeliver) document.getElementById('btnDeliver').disabled = false;
 
-        // フッターボタン制御
-        document.getElementById('btnMoveForward').disabled = (gameState.currentDistance >= CONFIG.MAX_DISTANCE);
-        document.getElementById('btnMoveBack').disabled = (gameState.currentDistance <= CONFIG.MIN_DISTANCE);
-        document.getElementById('btnTalk').disabled = !loc.hasTarget;
+        // フッターボタンの表示切り替え
+        const exploreBtns = [
+            document.getElementById('btnMoveForward'),
+            document.getElementById('btnMoveBack'),
+            document.getElementById('btnTalk'),
+            document.getElementById('btnItem')
+        ];
+        const battleBtn = document.getElementById('btnStartBattle');
+
+        if (gameState.isBattling) {
+            exploreBtns.forEach(b => b.style.display = 'none');
+            battleBtn.style.display = 'flex';
+            battleBtn.disabled = false;
+        } else {
+            exploreBtns.forEach(b => b.style.display = 'flex');
+            battleBtn.style.display = 'none';
+            // 通常時の有効/無効
+            document.getElementById('btnMoveForward').disabled = (gameState.currentDistance >= CONFIG.MAX_DISTANCE);
+            document.getElementById('btnMoveBack').disabled = (gameState.currentDistance <= CONFIG.MIN_DISTANCE);
+            document.getElementById('btnTalk').disabled = !loc.hasTarget;
+        }
     },
 
     getLocData: function(dist) {
@@ -41,10 +57,7 @@ const uiControl = {
     openModal: function() {
         const modal = document.getElementById('itemModal');
         const list = document.getElementById('itemList');
-        const detail = document.getElementById('itemDetailArea');
         list.innerHTML = '';
-        detail.textContent = 'アイテムを選択してください';
-        
         const items = Object.entries(gameState.inventory).filter(([k,v]) => v > 0);
         if (items.length === 0) {
             list.innerHTML = '<div style="text-align:center; padding:20px;">所持品なし</div>';
@@ -75,6 +88,8 @@ const uiControl = {
 // --- ゲーム論理モジュール ---
 const gameAction = {
     move: function(step) {
+        if (gameState.isBattling) return;
+
         const prevLoc = uiControl.getLocData(gameState.currentDistance).name;
         let nextDist = gameState.currentDistance + step;
 
@@ -89,8 +104,15 @@ const gameAction = {
         if (nextDist < CONFIG.MIN_DISTANCE || nextDist > CONFIG.MAX_DISTANCE) return;
 
         gameState.currentDistance = nextDist;
-        uiControl.updateUI();
         uiControl.addLog(`${gameState.currentDistance}m地点へ移動した。`);
+
+        // エンカウント判定（0m地点以外）
+        if (gameState.currentDistance > 0 && Math.random() < CONFIG.BATTLE_RATE) {
+            this.startBattle();
+            return;
+        }
+
+        uiControl.updateUI();
 
         if (gameState.currentDistance === 3 && !gameState.flags.gotTestCoin) {
             gameState.flags.gotTestCoin = true;
@@ -107,7 +129,56 @@ const gameAction = {
         }
     },
 
+    startBattle: function() {
+        gameState.isBattling = true;
+        gameState.currentEnemy = { ...CONFIG.TEST_ENEMY };
+        uiControl.addLog(`${gameState.currentEnemy.name}が現れた！`);
+        uiControl.updateUI();
+    },
+
+    runBattleLoop: function() {
+        const btn = document.getElementById('btnStartBattle');
+        btn.disabled = true;
+
+        const loop = () => {
+            if (!gameState.isBattling) return;
+
+            // 1. カインの攻撃
+            const playerAtk = 10;
+            gameState.currentEnemy.hp -= playerAtk;
+            uiControl.addLog(`カインの攻撃！ ${gameState.currentEnemy.name}に${playerAtk}のダメージ！`);
+
+            if (gameState.currentEnemy.hp <= 0) {
+                uiControl.addLog(`${gameState.currentEnemy.name}を倒した！`);
+                uiControl.addLog("勝利した！");
+                this.endBattle();
+                return;
+            }
+
+            // 2. 敵の反撃
+            setTimeout(() => {
+                const enemyAtk = gameState.currentEnemy.atk;
+                gameState.cainHP -= enemyAtk;
+                if (gameState.cainHP <= 0) gameState.cainHP = 1; // 死亡処理は後ほど
+                
+                uiControl.addLog(`${gameState.currentEnemy.name}の攻撃！ カインは${enemyAtk}のダメージを受けた！`);
+                uiControl.updateUI();
+
+                if (gameState.isBattling) setTimeout(loop, 1000);
+            }, 1000);
+        };
+
+        loop();
+    },
+
+    endBattle: function() {
+        gameState.isBattling = false;
+        gameState.currentEnemy = null;
+        uiControl.updateUI();
+    },
+
     talk: function() {
+        if (gameState.isBattling) return;
         const dist = gameState.currentDistance;
         if (dist === 0) {
             uiControl.addLog(gameState.flags.isDelivered ? "宿屋の主人『気をつけてな！』" : "宿屋の主人『銀貨を3枚、頼んだぞ。』");
@@ -139,5 +210,4 @@ const gameAction = {
     }
 };
 
-// --- 初期化 ---
 window.onload = () => { uiControl.addLog("探索を開始した。"); uiControl.updateUI(); };
