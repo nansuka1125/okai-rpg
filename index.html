@@ -13,7 +13,7 @@
             --hp-red: #ff4d4d;
             --ui-bg: #1a1a1a;
             --border-color: #333333;
-            --modal-overlay: rgba(0, 0, 0, 0.8);
+            --modal-overlay: rgba(0, 0, 0, 0.9);
             --safe-area-bottom: env(safe-area-inset-bottom);
         }
 
@@ -79,6 +79,31 @@
             transition: width 0.3s ease;
         }
 
+        /* --- 特殊アクションエリア (納品ボタン用) --- */
+        #specialActionContainer {
+            flex: 0 0 auto;
+            background: var(--bg-color);
+            padding: 0;
+            display: none; /* 動的に制御 */
+        }
+
+        .special-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent-purple);
+            color: white;
+            border: none;
+            border-bottom: 2px solid #000;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .special-btn:disabled {
+            background: #444;
+            color: #888;
+        }
+
         /* --- プログレスライン --- */
         #progressContainer {
             background: var(--ui-bg);
@@ -140,19 +165,6 @@
 
         .log-marker { color: #888; font-weight: bold; }
 
-        .inline-btn {
-            display: block;
-            width: 100%;
-            margin-top: 10px;
-            padding: 12px;
-            background: var(--accent-purple);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            text-align: center;
-        }
-
         /* --- 操作エリア --- */
         footer {
             flex: 0 0 auto;
@@ -179,13 +191,13 @@
 
         .btn:disabled { opacity: 0.25; }
 
-        /* --- モーダル --- */
+        /* --- アイテムモーダル --- */
         #itemModal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: var(--modal-overlay);
-            z-index: 100;
+            z-index: 9999; /* 最前面 */
             justify-content: center; align-items: center; padding: 20px;
         }
 
@@ -194,6 +206,22 @@
             border: 1px solid #444;
             border-radius: 12px; width: 100%; max-width: 400px;
             display: flex; flex-direction: column;
+        }
+
+        .item-list-container {
+            padding: 10px; max-height: 40vh; overflow-y: auto;
+        }
+
+        .item-row {
+            padding: 15px; border: 1px solid #333; margin-bottom: 8px;
+            border-radius: 8px; background: #222; cursor: pointer;
+        }
+
+        .item-row:active { background: #333; }
+
+        .item-detail-area {
+            padding: 15px; border-top: 1px solid #333; text-align: center;
+            background: #111; min-height: 100px;
         }
     </style>
 </head>
@@ -206,15 +234,17 @@
         <div class="hp-bar-bg"><div id="hpFill" class="hp-bar-fill"></div></div>
     </header>
 
+    <div id="specialActionContainer">
+        <button id="btnDeliver" class="special-btn" onclick="gameAction.deliver()">[ 銀貨を3枚納品する ]</button>
+    </div>
+
     <div id="progressContainer">
         <div class="progress-labels">
             <span>宿屋</span>
             <span id="progressText">( 0 / 10m )</span>
             <span>森の深層</span>
         </div>
-        <div class="progress-track">
-            <div id="progressMarker"></div>
-        </div>
+        <div class="progress-track"><div id="progressMarker"></div></div>
     </div>
 
     <div id="locationBar">―― 場所名 ――</div>
@@ -231,8 +261,8 @@
     <div id="itemModal">
         <div class="modal-content">
             <div style="padding:15px; border-bottom:1px solid #333; text-align:center; font-weight:bold;">所持品</div>
-            <div id="itemList" style="padding:10px; max-height:50vh; overflow-y:auto;"></div>
-            <div id="itemActionArea" style="padding:10px; text-align:center; font-size:14px;"></div>
+            <div id="itemList" class="item-list-container"></div>
+            <div id="itemDetailArea" class="item-detail-area">アイテムを選択してください</div>
             <button class="btn" style="margin:10px;" onclick="uiControl.closeModal()">閉じる</button>
         </div>
     </div>
@@ -242,13 +272,17 @@
         const CONFIG = {
             MAX_DISTANCE: 10,
             MIN_DISTANCE: 0,
-            ITEM_NAME: { silverCoin: "銀貨", herb: "薬草" }
+            ITEM_NAME: { silverCoin: "銀貨", herb: "薬草" },
+            ITEM_DESC: { 
+                silverCoin: "宿屋に納品するための銀貨。3枚必要だ。", 
+                herb: "傷を癒やす野草。HPを全回復する。" 
+            }
         };
 
         const LOCATIONS = {
             0: { name: "宿屋前", hasTarget: true, desc: "出発の準備は整った。" },
             1: { name: "琥珀の森", hasTarget: false, desc: "鳥の鳴き声が聞こえる…" },
-            7: { name: "森の深層", hasTarget: true, desc: "空気が湿ってきた…" }
+            7: { name: "森의 深層", hasTarget: true, desc: "空気が湿ってきた…" }
         };
 
         // --- 状態管理 ---
@@ -258,46 +292,83 @@
             cainHP: 100,
             cainMaxHP: 100,
             inventory: { silverCoin: 0, herb: 1 },
-            flags: { isDelivered: false, gotTestCoin: false },
-            isInputLocked: false
+            flags: { isDelivered: false, gotTestCoin: false }
         };
 
         // --- UI操作モジュール ---
         const uiControl = {
+            // --- addLog: ログ追加 ---
             addLog: function(text, type = "") {
                 const container = document.getElementById('logContainer');
                 const entry = document.createElement('div');
                 entry.className = 'log-entry';
                 if (type === "marker") entry.classList.add('log-marker');
-                entry.innerHTML = text;
+                entry.textContent = text;
                 container.appendChild(entry);
                 container.scrollTop = container.scrollHeight;
             },
 
+            // --- updateUI: 全UIの動的更新 ---
             updateUI: function() {
                 const loc = this.getLocData(gameState.currentDistance);
                 
-                // ステータス更新
+                // ステータス・プログレス
                 document.getElementById('statusInfo').textContent = `カイン Lv.${gameState.cainLv} [ ${gameState.cainHP} / ${gameState.cainMaxHP} ]`;
                 document.getElementById('hpFill').style.width = `${(gameState.cainHP / gameState.cainMaxHP) * 100}%`;
                 document.getElementById('locationBar').textContent = `―― ${loc.name} ――`;
-
-                // プログレスライン更新
                 const ratio = (gameState.currentDistance / CONFIG.MAX_DISTANCE) * 100;
                 document.getElementById('progressMarker').style.left = `${ratio}%`;
                 document.getElementById('progressText').textContent = `( ${gameState.currentDistance} / ${CONFIG.MAX_DISTANCE}m )`;
 
-                // ボタン制御
-                const isLocked = gameState.isInputLocked;
-                document.getElementById('btnMoveForward').disabled = isLocked || (gameState.currentDistance >= CONFIG.MAX_DISTANCE);
-                document.getElementById('btnMoveBack').disabled = isLocked || (gameState.currentDistance <= CONFIG.MIN_DISTANCE);
-                document.getElementById('btnTalk').disabled = isLocked || !loc.hasTarget;
-                document.getElementById('btnItem').disabled = isLocked;
+                // 納品ボタンの制御
+                const specialArea = document.getElementById('specialActionContainer');
+                const showDeliver = (gameState.currentDistance === 0 && gameState.inventory.silverCoin >= 3 && !gameState.flags.isDelivered);
+                specialArea.style.display = showDeliver ? 'block' : 'none';
+                if (showDeliver) document.getElementById('btnDeliver').disabled = false;
+
+                // フッターボタン制御
+                document.getElementById('btnMoveForward').disabled = (gameState.currentDistance >= CONFIG.MAX_DISTANCE);
+                document.getElementById('btnMoveBack').disabled = (gameState.currentDistance <= CONFIG.MIN_DISTANCE);
+                document.getElementById('btnTalk').disabled = !loc.hasTarget;
             },
 
             getLocData: function(dist) {
                 const keys = Object.keys(LOCATIONS).map(Number).sort((a, b) => b - a);
                 return LOCATIONS[keys.find(k => dist >= k)];
+            },
+
+            // --- openModal: アイテムリスト生成とバインド ---
+            openModal: function() {
+                const modal = document.getElementById('itemModal');
+                const list = document.getElementById('itemList');
+                const detail = document.getElementById('itemDetailArea');
+                list.innerHTML = '';
+                detail.textContent = 'アイテムを選択してください';
+                
+                const items = Object.entries(gameState.inventory).filter(([k,v]) => v > 0);
+                if (items.length === 0) {
+                    list.innerHTML = '<div style="text-align:center; padding:20px;">所持品なし</div>';
+                } else {
+                    items.forEach(([key, count]) => {
+                        const div = document.createElement('div');
+                        div.className = 'item-row';
+                        div.textContent = `${CONFIG.ITEM_NAME[key]} (×${count})`;
+                        // 確実なバインド
+                        div.onclick = () => this.selectItem(key, count);
+                        list.appendChild(div);
+                    });
+                }
+                modal.style.display = 'flex';
+            },
+
+            selectItem: function(key, count) {
+                const detail = document.getElementById('itemDetailArea');
+                let html = `<strong>${CONFIG.ITEM_NAME[key]}</strong> (×${count})<br><span style="font-size:12px;color:#aaa;">${CONFIG.ITEM_DESC[key]}</span>`;
+                
+                if (key === 'herb') {
+                    html += `<br><button class="btn" style="height:35px;margin:10px auto 0;width:120px;" onclick="gameAction.executeHerb()">使う</button>`;
+                }
+                detail.innerHTML = html;
             },
 
             closeModal: function() { document.getElementById('itemModal').style.display = 'none'; }
@@ -309,11 +380,11 @@
                 const prevLoc = uiControl.getLocData(gameState.currentDistance).name;
                 let nextDist = gameState.currentDistance + step;
 
-                // 納品前の10m壁制限
+                // 通行制限
                 if (!gameState.flags.isDelivered && nextDist >= CONFIG.MAX_DISTANCE) {
                     nextDist = CONFIG.MAX_DISTANCE;
                     if (gameState.currentDistance === CONFIG.MAX_DISTANCE && step > 0) {
-                        uiControl.addLog("門番『通行証か、納品を済ませるまでは通せないな』");
+                        uiControl.addLog("門番『通行証か納品が済むまでは通せん。』");
                         return;
                     }
                 }
@@ -324,7 +395,7 @@
                 uiControl.updateUI();
                 uiControl.addLog(`${gameState.currentDistance}m地点へ移動した。`);
 
-                // 銀貨獲得イベント (3m地点)
+                // 拾得イベント (3m)
                 if (gameState.currentDistance === 3 && !gameState.flags.gotTestCoin) {
                     gameState.flags.gotTestCoin = true;
                     gameState.inventory.silverCoin += 3;
@@ -344,43 +415,35 @@
             talk: function() {
                 const dist = gameState.currentDistance;
                 if (dist === 0) {
-                    if (gameState.inventory.silverCoin >= 3 && !gameState.flags.isDelivered) {
-                        uiControl.addLog("宿屋の主人『お、銀貨を持ってきてくれたのか！』");
-                        uiControl.addLog('<button class="inline-btn" onclick="gameAction.deliver()">[ 銀貨を3枚納品する ]</button>');
-                        gameState.isInputLocked = true;
-                        uiControl.updateUI();
-                    } else {
-                        uiControl.addLog("宿屋の主人『銀貨を3枚、頼んだぞ。』");
-                    }
+                    uiControl.addLog(gameState.flags.isDelivered ? "宿屋の主人『気をつけてな！』" : "宿屋の主人『銀貨を3枚、頼んだぞ。』");
                 } else if (dist >= 7) {
                     uiControl.addLog("（周囲を警戒している…）");
                 }
             },
 
             deliver: function() {
+                const btn = document.getElementById('btnDeliver');
+                btn.disabled = true; // 二重防止
+                
                 gameState.inventory.silverCoin -= 3;
                 gameState.flags.isDelivered = true;
-                gameState.isInputLocked = false;
+                
                 uiControl.addLog("銀貨を納品した。");
-                uiControl.addLog("宿屋の主人『助かったよ、これで準備がすすめられる！』");
+                uiControl.addLog("宿屋の主人『助かった！これで荷馬車の準備ができる。』");
+                uiControl.addLog("（荷馬車の通行許可を得た！）");
                 uiControl.updateUI();
             },
 
-            useItem: function() {
-                const modal = document.getElementById('itemModal');
-                const list = document.getElementById('itemList');
-                list.innerHTML = '';
-                const items = Object.entries(gameState.inventory).filter(([k,v]) => v > 0);
-                if(items.length === 0) list.innerHTML = "所持品なし";
-                else {
-                    items.forEach(([k,v]) => {
-                        const d = document.createElement('div');
-                        d.style.padding = "10px"; d.style.borderBottom = "1px solid #333";
-                        d.textContent = `${CONFIG.ITEM_NAME[k]} (×${v})`;
-                        list.appendChild(d);
-                    });
+            useItem: function() { uiControl.openModal(); },
+
+            executeHerb: function() {
+                if (gameState.inventory.herb > 0) {
+                    gameState.inventory.herb--;
+                    gameState.cainHP = gameState.cainMaxHP;
+                    uiControl.updateUI();
+                    uiControl.closeModal();
+                    uiControl.addLog("薬草を使い、HPが全回復した。");
                 }
-                modal.style.display = 'flex';
             }
         };
 
