@@ -45,7 +45,6 @@
             flex: 0 0 auto; background: var(--ui-bg); border-top: 1px solid var(--border-color);
             padding: 10px 10px calc(10px + var(--safe-area-bottom));
         }
-        /* btn-grid クラスを使用 */
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; grid-gap: 8px; }
         .btn { height: 54px; background: #333; border: 1px solid #444; color: white; border-radius: 8px; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; text-decoration: none; }
         .btn:disabled { opacity: 0.25; }
@@ -74,7 +73,7 @@
 
     <footer>
         <div id="exploreUI" class="btn-grid">
-            <button id="btnEnterInn" class="btn btn-full btn-accent" onclick="innSystem.enterInn()">[ 宿屋に入る ]</button>
+            <button id="btnEnterInn" class="btn btn-full" onclick="innSystem.enterInn()">[ 宿屋に入る ]</button>
             <button id="btnMoveForward" class="btn" onclick="explorationSystem.move(1)">進む</button>
             <button id="btnMoveBack" class="btn" onclick="explorationSystem.move(-1)">戻る</button>
             <button id="btnTalk" class="btn" onclick="explorationSystem.talk()">話す</button>
@@ -83,7 +82,7 @@
 
         <div id="innUI" class="btn-grid" style="display:none;">
             <button class="btn" onclick="innSystem.talk()">話す</button>
-            <button class="btn" onclick="innSystem.stay()">泊まる</button>
+            <button id="btnStay" class="btn" onclick="innSystem.stay()">泊まる</button>
             <button class="btn" onclick="uiControl.addLog('（まだ準備中です）')">様子を見る</button>
             <button id="btnInnDeliver" class="btn btn-accent" onclick="innSystem.deliver()">銀貨を納品</button>
             <button class="btn btn-full" onclick="innSystem.exitInn()">外に出る</button>
