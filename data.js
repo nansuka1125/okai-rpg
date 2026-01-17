@@ -30,17 +30,19 @@ const LOCATIONS = {
     7: { name: "森の深層", hasTarget: true, desc: "空気が湿ってきた…" }
 };
 
-// --- 状態管理 ---
+// 🚩ーー【状態管理】ここからーー
 let gameState = {
     currentDistance: 0,
     cainLv: 1,
     cainHP: 100,
     cainMaxHP: 100,
-    inventory: { silverCoin: 0, herb: 1 },
+    inventory: { silverCoin: 0, herb: 0 },
     flags: { isDelivered: false, gotTestCoin: false },
     // 状態フラグ
     isBattling: false,
-    isAtInn: false, // 宿屋の中にいるか
+    isAtInn: false, 
     currentEnemy: null,
-    talkCount: 0 // 会話の進行度
+    talkCount: 0,
+    canStay: true // 宿泊可能フラグ
 };
+// 🏁ーー【状態管理】ここまでーー
