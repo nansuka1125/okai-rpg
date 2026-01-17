@@ -155,6 +155,11 @@ const explorationSystem = {
 
         if (nextDist < CONFIG.MIN_DISTANCE || nextDist > CONFIG.MAX_DISTANCE) return;
 
+        // 1歩でも動いたら宿泊可能にする
+        if (step !== 0) {
+            gameState.canStay = true;
+        }
+
         gameState.currentDistance = nextDist;
         uiControl.addLog(`${gameState.currentDistance}m地点へ移動した。`);
 
@@ -203,6 +208,7 @@ const explorationSystem = {
 // 🏁ーー【移動・探索システム】ここまでーー
 
 
+
 // 🚩ーー【宿屋・拠点システム】ここからーー
 const innSystem = {
     // --- enterInn: 拠点入場 ---
@@ -243,7 +249,20 @@ const innSystem = {
 
     // --- stay: 宿泊（全回復） ---
     stay: function() {
+        // HPが満タンの場合
+        if (gameState.cainHP >= gameState.cainMaxHP) {
+            uiControl.addLog("カイン「今はまだ休む必要はないな。」");
+            return;
+        }
+
+        // 宿泊済みフラグのチェック
+        if (!gameState.canStay) {
+            uiControl.addLog("宿屋の主人『悪いが、そう何度も部屋は貸せねえよ。少し外でも歩いてきたらどうだい？』");
+            return;
+        }
+
         gameState.cainHP = gameState.cainMaxHP;
+        gameState.canStay = false; // 宿泊済み
         uiControl.addLog("カインは一晩眠り、疲れが癒えた。（HPが全回復した）");
         uiControl.updateUI();
     },
@@ -259,6 +278,7 @@ const innSystem = {
     }
 };
 // 🏁ーー【宿屋・拠点システム】ここまでーー
+
 
 
 // 🚩ーー【バトルシステム】ここからーー
