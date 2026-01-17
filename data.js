@@ -12,6 +12,17 @@ const CONFIG = {
     TEST_ENEMY: { name: "魔界ネズミ", hp: 20, maxHp: 20, atk: 5 }
 };
 
+// 🚩ーー【会話データ】ここからーー
+const TALK_DATA = {
+    innOwner: [
+        { text: "店主「あれだ、森で適当に探してくるとかさ」", effect: null },
+        { text: "娘「カインさん、あの…っ！これどうぞ」", effect: "getHerb" },
+        { text: "娘「琥珀の森は最近、魔物が増えています。どうかお気をつけて」", effect: null },
+        { text: "店主「早く銀貨を持ってきてくれ」", effect: null }
+    ]
+};
+// 🏁ーー【会話データ】ここまでーー
+
 // --- ロケーションデータ ---
 const LOCATIONS = {
     0: { name: "宿屋前", hasTarget: true, desc: "出発の準備は整った。" },
@@ -30,5 +41,6 @@ let gameState = {
     // 状態フラグ
     isBattling: false,
     isAtInn: false, // 宿屋の中にいるか
-    currentEnemy: null
+    currentEnemy: null,
+    talkCount: 0 // 会話の進行度
 };
