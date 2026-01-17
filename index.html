@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -46,8 +45,9 @@
             flex: 0 0 auto; background: var(--ui-bg); border-top: 1px solid var(--border-color);
             padding: 10px 10px calc(10px + var(--safe-area-bottom));
         }
+        /* btn-grid クラスを使用 */
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; grid-gap: 8px; }
-        .btn { height: 54px; background: #333; border: 1px solid #444; color: white; border-radius: 8px; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        .btn { height: 54px; background: #333; border: 1px solid #444; color: white; border-radius: 8px; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; text-decoration: none; }
         .btn:disabled { opacity: 0.25; }
         .btn-full { grid-column: 1 / 3; }
         .btn-accent { background: var(--accent-purple); border-color: var(--accent-purple); }
@@ -73,23 +73,23 @@
     <main id="logContainer"></main>
 
     <footer>
-<div id="exploreUI" class="action-grid">
-    <button id="btnMoveBack" class="btn" onclick="explorationSystem.move(-1)">戻る</button>
-    <button id="btnMoveForward" class="btn btn-primary" onclick="explorationSystem.move(1)">進む</button>
-    <button id="btnTalk" class="btn" onclick="explorationSystem.talk()">話す</button>
-    <button id="btnItem" class="btn" onclick="uiControl.openModal()">アイテム</button>
-    <button id="btnEnterInn" class="btn btn-accent" style="display:none;" onclick="innSystem.enterInn()">[ 宿屋に入る ]</button>
-</div>
-<div id="innUI" class="action-grid" style="display:none;">
-    <button class="btn" onclick="innSystem.talk()">話す</button>
-    <button class="btn" onclick="innSystem.stay()">泊まる</button>
-    <button class="btn" onclick="uiControl.addLog('（まだ準備中です）')">様子を見る</button>
-    <button id="btnInnDeliver" class="btn btn-primary" onclick="innSystem.deliver()">銀貨を納品</button>
-    <button class="btn" onclick="innSystem.exitInn()">外に出る</button>
-</div>
+        <div id="exploreUI" class="btn-grid">
+            <button id="btnEnterInn" class="btn btn-full btn-accent" onclick="innSystem.enterInn()">[ 宿屋に入る ]</button>
+            <button id="btnMoveForward" class="btn" onclick="explorationSystem.move(1)">進む</button>
+            <button id="btnMoveBack" class="btn" onclick="explorationSystem.move(-1)">戻る</button>
+            <button id="btnTalk" class="btn" onclick="explorationSystem.talk()">話す</button>
+            <button id="btnItem" class="btn" onclick="uiControl.openModal()">アイテム</button>
+        </div>
 
+        <div id="innUI" class="btn-grid" style="display:none;">
+            <button class="btn" onclick="innSystem.talk()">話す</button>
+            <button class="btn" onclick="innSystem.stay()">泊まる</button>
+            <button class="btn" onclick="uiControl.addLog('（まだ準備中です）')">様子を見る</button>
+            <button id="btnInnDeliver" class="btn btn-accent" onclick="innSystem.deliver()">銀貨を納品</button>
+            <button class="btn btn-full" onclick="innSystem.exitInn()">外に出る</button>
+        </div>
 
-        <button id="btnStartBattle" class="btn btn-full btn-accent" style="display:none;" onclick="gameAction.runBattleLoop()">[ 戦闘開始 ]</button>
+        <button id="btnStartBattle" style="display:none;"></button>
     </footer>
 
     <div id="itemModal">
