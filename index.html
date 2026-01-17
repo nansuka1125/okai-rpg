@@ -73,21 +73,21 @@
     <main id="logContainer"></main>
 
     <footer>
-        <div id="exploreUI" class="btn-grid">
-            <button id="btnEnterInn" class="btn btn-full btn-accent" onclick="gameAction.enterInn()">[ 宿屋に入る ]</button>
-            <button id="btnMoveForward" class="btn" onclick="gameAction.move(1)">進む</button>
-            <button id="btnMoveBack" class="btn" onclick="gameAction.move(-1)">戻る</button>
-            <button id="btnTalk" class="btn" onclick="gameAction.talk()">話す</button>
-            <button id="btnItem" class="btn" onclick="gameAction.useItem()">アイテム</button>
-        </div>
+<div id="exploreUI" class="action-grid">
+    <button id="btnMoveBack" class="btn" onclick="explorationSystem.move(-1)">戻る</button>
+    <button id="btnMoveForward" class="btn btn-primary" onclick="explorationSystem.move(1)">進む</button>
+    <button id="btnTalk" class="btn" onclick="explorationSystem.talk()">話す</button>
+    <button id="btnItem" class="btn" onclick="uiControl.openModal()">アイテム</button>
+    <button id="btnEnterInn" class="btn btn-accent" style="display:none;" onclick="innSystem.enterInn()">[ 宿屋に入る ]</button>
+</div>
+<div id="innUI" class="action-grid" style="display:none;">
+    <button class="btn" onclick="innSystem.talk()">話す</button>
+    <button class="btn" onclick="innSystem.stay()">泊まる</button>
+    <button class="btn" onclick="uiControl.addLog('（まだ準備中です）')">様子を見る</button>
+    <button id="btnInnDeliver" class="btn btn-primary" onclick="innSystem.deliver()">銀貨を納品</button>
+    <button class="btn" onclick="innSystem.exitInn()">外に出る</button>
+</div>
 
-        <div id="innUI" class="btn-grid" style="display:none;">
-            <button class="btn" onclick="gameAction.innTalk()">話す</button>
-            <button class="btn" onclick="gameAction.innStay()">泊まる</button>
-            <button class="btn" onclick="gameAction.innTalk()">様子を見る</button>
-            <button id="btnInnDeliver" class="btn btn-accent" onclick="gameAction.innDeliver()">銀貨を納品</button>
-            <button class="btn btn-full" onclick="gameAction.exitInn()">外に出る</button>
-        </div>
 
         <button id="btnStartBattle" class="btn btn-full btn-accent" style="display:none;" onclick="gameAction.runBattleLoop()">[ 戦闘開始 ]</button>
     </footer>
