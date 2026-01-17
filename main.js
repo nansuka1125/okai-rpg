@@ -1,5 +1,5 @@
 // 🚩ーー【UI表示・更新処理】ーー
-const uiControl = {
+const uiControl = { 
     // --- addLog: ログの出力 ---
     addLog: function(text, type = "") {
         const container = document.getElementById('logContainer');
