@@ -4,10 +4,12 @@ const uiControl = {
     addLog: function(text, type = "") {
         const container = document.getElementById('logContainer');
         if (!container) return;
+
         const entry = document.createElement('div');
         entry.className = 'log-entry';
         if (type === "marker") entry.classList.add('log-marker');
         entry.textContent = text;
+
         container.appendChild(entry);
         container.scrollTop = container.scrollHeight;
     },
@@ -25,16 +27,19 @@ const uiControl = {
         // ロケーション・メーター制御
         const locBar = document.getElementById('locationBar');
         const progressContainer = document.getElementById('progressContainer');
-        if (locBar) locBar.textContent = `―― ${loc.name} ――`;
         
-        // 0m地点の特殊挙動：メーター非表示
+        // ダンジョン内のみメーターを表示、拠点では非表示
         if (progressContainer) {
-            progressContainer.style.visibility = (gameState.currentDistance === 0) ? 'hidden' : 'visible';
+            progressContainer.style.display = (gameState.isInDungeon) ? 'block' : 'none';
+        }
+
+        if (locBar) {
+            locBar.textContent = gameState.isInDungeon ? `―― ${loc.name} ――` : `―― 宿屋前 ――`;
         }
         
         const progressMarker = document.getElementById('progressMarker');
         const progressText = document.getElementById('progressText');
-        if (progressMarker && progressText) {
+        if (progressMarker && progressText && gameState.isInDungeon) {
             const ratio = (gameState.currentDistance / CONFIG.MAX_DISTANCE) * 100;
             progressMarker.style.left = `${ratio}%`;
             progressText.textContent = `( ${gameState.currentDistance} / ${CONFIG.MAX_DISTANCE}m )`;
@@ -51,8 +56,6 @@ const uiControl = {
 
         // 戦闘中の全ボタン無効化
         if (gameState.isBattling) {
-            if (exploreUI) exploreUI.style.display = 'none';
-            if (innUI) innUI.style.display = 'none';
             allButtons.forEach(btn => btn.disabled = true);
             return;
         }
@@ -64,13 +67,6 @@ const uiControl = {
             // 宿屋UIの表示
             if (exploreUI) exploreUI.style.display = 'none';
             if (innUI) innUI.style.display = 'grid';
-            
-            // HP満タン時は「泊まる」を無効化
-            const btnStay = document.querySelector('button[onclick="innSystem.stay()"]');
-            if (btnStay && gameState.cainHP >= gameState.cainMaxHP) {
-                btnStay.disabled = true;
-            }
-
             const btnInnDeliver = document.getElementById('btnInnDeliver');
             const canDeliver = (gameState.inventory.silverCoin >= 3 && !gameState.flags.isDelivered);
             if (btnInnDeliver) btnInnDeliver.style.display = canDeliver ? 'flex' : 'none';
@@ -84,37 +80,48 @@ const uiControl = {
             const btnMoveBack = document.getElementById('btnMoveBack');
             const btnTalk = document.getElementById('btnTalk');
 
-            if (gameState.currentDistance === 0) {
+            if (!gameState.isInDungeon) {
+                // 拠点（ダンジョン外）の状態
                 if (btnEnterInn) btnEnterInn.style.display = 'flex';
-                // 0m地点：森に入る処理を距離0での移動として定義
                 if (btnMoveForward) {
                     btnMoveForward.textContent = "琥珀の森へ";
-                    btnMoveForward.setAttribute("onclick", "explorationSystem.move(0)");
+                    btnMoveForward.onclick = () => explorationSystem.enterDungeon();
                 }
                 if (btnMoveBack) btnMoveBack.disabled = true;
+                if (btnTalk) btnTalk.disabled = false;
             } else {
+                // ダンジョン内の状態
                 if (btnEnterInn) btnEnterInn.style.display = 'none';
                 if (btnMoveForward) {
                     btnMoveForward.textContent = "進む";
-                    btnMoveForward.setAttribute("onclick", "explorationSystem.move(1)");
+                    btnMoveForward.onclick = () => explorationSystem.move(1);
                     btnMoveForward.disabled = (gameState.currentDistance >= CONFIG.MAX_DISTANCE);
                 }
+                if (btnMoveBack) {
+                    btnMoveBack.onclick = () => explorationSystem.move(-1);
+                    btnMoveBack.disabled = false;
+                }
+                if (btnTalk) btnTalk.disabled = !loc.hasTarget;
             }
-            if (btnTalk) btnTalk.disabled = !loc.hasTarget;
         }
     },
 
+    // --- getLocData: 距離に応じたロケーション取得 ---
     getLocData: function(dist) {
         const keys = Object.keys(LOCATIONS).map(Number).sort((a, b) => b - a);
-        return LOCATIONS[keys.find(k => dist >= k)];
+        const key = keys.find(k => dist >= k);
+        return LOCATIONS[key];
     },
 
+    // --- openModal: アイテム画面の展開 ---
     openModal: function() {
         const modal = document.getElementById('itemModal');
         const list = document.getElementById('itemList');
         if (!modal || !list) return;
+
         list.innerHTML = '';
-        const items = Object.entries(gameState.inventory).filter(([k,v]) => v > 0);
+        const items = Object.entries(gameState.inventory).filter(([k, v]) => v > 0);
+        
         if (items.length === 0) {
             list.innerHTML = '<div style="text-align:center; padding:20px;">所持品なし</div>';
         } else {
@@ -129,9 +136,11 @@ const uiControl = {
         modal.style.display = 'flex';
     },
 
+    // --- selectItem: アイテム詳細表示 ---
     selectItem: function(key, count) {
         const detail = document.getElementById('itemDetailArea');
         if (!detail) return;
+
         let html = `<strong>${CONFIG.ITEM_NAME[key]}</strong> (×${count})<br><span style="font-size:12px;color:#aaa;">${CONFIG.ITEM_DESC[key]}</span>`;
         if (key === 'herb') {
             html += `<br><button class="btn" style="height:35px;margin:10px auto 0;width:120px;" onclick="explorationSystem.executeHerb()">使う</button>`;
@@ -139,6 +148,7 @@ const uiControl = {
         detail.innerHTML = html;
     },
 
+    // --- closeModal: モーダルを閉じる ---
     closeModal: function() {
         const modal = document.getElementById('itemModal');
         if (modal) modal.style.display = 'none';
@@ -146,12 +156,27 @@ const uiControl = {
 };
 // 🏁ーー【UI表示・更新処理】ここまでーー
 
-
 // 🚩ーー【移動・探索システム】ここからーー
 const explorationSystem = {
+    // --- enterDungeon: 拠点からダンジョンへの進入 ---
+    enterDungeon: function() {
+        gameState.isInDungeon = true;
+        gameState.currentDistance = 0;
+        uiControl.addLog("―― 琥珀の森 ――", "marker");
+        this.move(0);
+    },
+
     // --- move: 距離移動のメイン処理 ---
     move: function(step) {
         if (gameState.isBattling || gameState.isAtInn) return;
+
+        // ダンジョンの入口(0m)で戻るを押した場合は拠点へ
+        if (gameState.isInDungeon && gameState.currentDistance === 0 && step === -1) {
+            gameState.isInDungeon = false;
+            uiControl.addLog("琥珀の森を抜け、宿屋前まで戻ってきた。");
+            uiControl.updateUI();
+            return;
+        }
 
         const prevLoc = uiControl.getLocData(gameState.currentDistance).name;
         let nextDist = gameState.currentDistance + step;
@@ -165,49 +190,47 @@ const explorationSystem = {
             }
         }
 
+        // 移動範囲の境界チェック
         if (nextDist < CONFIG.MIN_DISTANCE || nextDist > CONFIG.MAX_DISTANCE) return;
 
-        // 実際に移動（stepが0以外）が発生した場合、宿泊可能フラグをリセット
+        // 実際に移動が発生した場合、宿泊可能フラグをリセット
         if (step !== 0) {
             gameState.canStay = true;
         }
 
         gameState.currentDistance = nextDist;
-
-        // ログ出力（0m地点へのエントリー判定）
-        if (gameState.currentDistance === 0) {
-            uiControl.addLog("琥珀の森に入った。");
-        } else {
+        if (step !== 0) {
             uiControl.addLog(`${gameState.currentDistance}m地点へ移動した。`);
         }
 
-        // エンカウント判定（0m地点は平和なため、currentDistance > 0 の時のみ判定）
-        if (gameState.currentDistance > 0 && Math.random() < CONFIG.BATTLE_RATE) {
+        // エンカウント判定（currentDistanceが0より大きい時のみ発生）
+        if (gameState.isInDungeon && gameState.currentDistance > 0 && Math.random() < CONFIG.BATTLE_RATE) {
             battleSystem.startBattle();
             return;
         }
 
         uiControl.updateUI();
 
-        // 固定イベント判定
+        // 固定イベント判定（銀貨の取得）
         if (gameState.currentDistance === 3 && !gameState.flags.gotTestCoin) {
             gameState.flags.gotTestCoin = true;
             gameState.inventory.silverCoin += 3;
             uiControl.addLog("道端に銀貨が3枚落ちている！カインはそれを拾い上げた。");
         }
 
+        // ロケーション変更に伴うログ出力
         const nextLoc = uiControl.getLocData(gameState.currentDistance);
         if (prevLoc !== nextLoc.name) {
             setTimeout(() => {
                 uiControl.addLog(`―― ${nextLoc.name} ――`, "marker");
                 uiControl.addLog(nextLoc.desc);
-            }, 800);
+            }, 600);
         }
     },
 
     // --- talk: 状況に応じた会話・独白処理 ---
     talk: function() {
-        if (gameState.currentDistance === 0) {
+        if (!gameState.isInDungeon) {
             uiControl.addLog("（宿屋に入って主人と話そう）");
         } else {
             uiControl.addLog("（周囲を警戒している…）");
@@ -226,8 +249,6 @@ const explorationSystem = {
     }
 };
 // 🏁ーー【移動・探索システム】ここまでーー
-
-
 
 
 // 🚩ーー【宿屋・拠点システム】ここからーー
