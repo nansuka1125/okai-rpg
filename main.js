@@ -22,20 +22,12 @@ const uiControl = {
         if (statusInfo) statusInfo.textContent = `カイン Lv.${gameState.cainLv} [ ${gameState.cainHP} / ${gameState.cainMaxHP} ]`;
         if (hpFill) hpFill.style.width = `${(gameState.cainHP / gameState.cainMaxHP) * 100}%`;
 
-        // ロケーション表示の修正
+        // ロケーション・メーター制御
         const locBar = document.getElementById('locationBar');
-        if (locBar) {
-            if (gameState.isAtInn || gameState.currentDistance === 0) {
-                // 宿屋の中、または宿屋前（0m）ではメートル表記なし
-                locBar.textContent = `―― 宿屋前 ――`;
-            } else {
-                // 森の中では距離を表示
-                locBar.textContent = `―― ${loc.name} (${gameState.currentDistance}m) ――`;
-            }
-        }
-        
-        // メーター制御（0m地点では非表示）
         const progressContainer = document.getElementById('progressContainer');
+        if (locBar) locBar.textContent = `―― ${loc.name} ――`;
+        
+        // 0m地点の特殊挙動：メーター非表示
         if (progressContainer) {
             progressContainer.style.visibility = (gameState.currentDistance === 0) ? 'hidden' : 'visible';
         }
@@ -72,15 +64,6 @@ const uiControl = {
             // 宿屋UIの表示
             if (exploreUI) exploreUI.style.display = 'none';
             if (innUI) innUI.style.display = 'grid';
-
-            // 宿泊ボタン（btnStay）の制御
-            // 注意: HTML側に id="btnStay" が付与されていることを前提とする
-            const btnStay = document.getElementById('btnStay');
-            if (btnStay) {
-                const isFullHP = gameState.cainHP >= gameState.cainMaxHP;
-                btnStay.disabled = (isFullHP || !gameState.canStay);
-            }
-
             const btnInnDeliver = document.getElementById('btnInnDeliver');
             const canDeliver = (gameState.inventory.silverCoin >= 3 && !gameState.flags.isDelivered);
             if (btnInnDeliver) btnInnDeliver.style.display = canDeliver ? 'flex' : 'none';
@@ -95,11 +78,7 @@ const uiControl = {
             const btnTalk = document.getElementById('btnTalk');
 
             if (gameState.currentDistance === 0) {
-                if (btnEnterInn) {
-                    btnEnterInn.style.display = 'flex';
-                    // デザイン統一のためアクセントカラーを外す場合はここで調整（クラス操作）
-                    btnEnterInn.className = "btn btn-full"; 
-                }
+                if (btnEnterInn) btnEnterInn.style.display = 'flex';
                 if (btnMoveForward) btnMoveForward.textContent = "琥珀の森へ";
                 if (btnMoveBack) btnMoveBack.disabled = true;
             } else {
@@ -156,164 +135,77 @@ const uiControl = {
 // 🏁ーー【UI表示・更新処理】ここまでーー
 
 
+// 🚩ーー【移動・探索システム】ここからーー
+const explorationSystem = {
+    // --- move: 距離移動のメイン処理 ---
+    move: function(step) {
+        if (gameState.isBattling || gameState.isAtInn) return;
 
-// 🚩ーー【UI表示・更新処理】ここからーー
-const uiControl = {
-    // --- addLog: ログの出力 ---
-    addLog: function(text, type = "") {
-        const container = document.getElementById('logContainer');
-        if (!container) return;
-        const entry = document.createElement('div');
-        entry.className = 'log-entry';
-        if (type === "marker") entry.classList.add('log-marker');
-        entry.textContent = text;
-        container.appendChild(entry);
-        container.scrollTop = container.scrollHeight;
-    },
+        const prevLoc = uiControl.getLocData(gameState.currentDistance).name;
+        let nextDist = gameState.currentDistance + step;
 
-    // --- updateUI: 画面の全要素を最新状態に更新 ---
-    updateUI: function() {
-        const loc = this.getLocData(gameState.currentDistance);
-        
-        // ステータス更新
-        const statusInfo = document.getElementById('statusInfo');
-        const hpFill = document.getElementById('hpFill');
-        if (statusInfo) statusInfo.textContent = `カイン Lv.${gameState.cainLv} [ ${gameState.cainHP} / ${gameState.cainMaxHP} ]`;
-        if (hpFill) hpFill.style.width = `${(gameState.cainHP / gameState.cainMaxHP) * 100}%`;
-
-        // ロケーション表示の修正
-        const locBar = document.getElementById('locationBar');
-        if (locBar) {
-            if (gameState.isAtInn || gameState.currentDistance === 0) {
-                // 宿屋の中、または宿屋前（0m）ではメートル表記なし
-                locBar.textContent = `―― 宿屋前 ――`;
-            } else {
-                // 森の中では距離を表示
-                locBar.textContent = `―― ${loc.name} (${gameState.currentDistance}m) ――`;
+        // 通行制限（フラグチェック）
+        if (!gameState.flags.isDelivered && nextDist >= CONFIG.MAX_DISTANCE) {
+            nextDist = CONFIG.MAX_DISTANCE;
+            if (gameState.currentDistance === CONFIG.MAX_DISTANCE && step > 0) {
+                uiControl.addLog("門番『通行証か納品が済むまでは通せん。』");
+                return;
             }
         }
-        
-        // メーター制御（0m地点では非表示）
-        const progressContainer = document.getElementById('progressContainer');
-        if (progressContainer) {
-            progressContainer.style.visibility = (gameState.currentDistance === 0) ? 'hidden' : 'visible';
-        }
-        
-        const progressMarker = document.getElementById('progressMarker');
-        const progressText = document.getElementById('progressText');
-        if (progressMarker && progressText) {
-            const ratio = (gameState.currentDistance / CONFIG.MAX_DISTANCE) * 100;
-            progressMarker.style.left = `${ratio}%`;
-            progressText.textContent = `( ${gameState.currentDistance} / ${CONFIG.MAX_DISTANCE}m )`;
+
+        if (nextDist < CONFIG.MIN_DISTANCE || nextDist > CONFIG.MAX_DISTANCE) return;
+
+        // 1歩でも動いたら宿泊可能にする
+        if (step !== 0) {
+            gameState.canStay = true;
         }
 
-        this.updateControlPanels(loc);
-    },
+        gameState.currentDistance = nextDist;
+        uiControl.addLog(`${gameState.currentDistance}m地点へ移動した。`);
 
-    // --- updateControlPanels: ボタン有効・無効の制御 ---
-    updateControlPanels: function(loc) {
-        const exploreUI = document.getElementById('exploreUI');
-        const innUI = document.getElementById('innUI');
-        const allButtons = document.querySelectorAll('button');
-
-        // 戦闘中の全ボタン無効化
-        if (gameState.isBattling) {
-            if (exploreUI) exploreUI.style.display = 'none';
-            if (innUI) innUI.style.display = 'none';
-            allButtons.forEach(btn => btn.disabled = true);
+        // エンカウント判定（0m地点除外）
+        if (gameState.currentDistance > 0 && Math.random() < CONFIG.BATTLE_RATE) {
+            battleSystem.startBattle();
             return;
         }
 
-        // 基本有効化
-        allButtons.forEach(btn => btn.disabled = false);
+        uiControl.updateUI();
 
-        if (gameState.isAtInn) {
-            // 宿屋UIの表示
-            if (exploreUI) exploreUI.style.display = 'none';
-            if (innUI) innUI.style.display = 'grid';
+        // 固定イベント判定
+        if (gameState.currentDistance === 3 && !gameState.flags.gotTestCoin) {
+            gameState.flags.gotTestCoin = true;
+            gameState.inventory.silverCoin += 3;
+            uiControl.addLog("道端に銀貨が3枚落ちている！カインはそれを拾い上げた。");
+        }
 
-            // 宿泊ボタン（btnStay）の制御
-            // 注意: HTML側に id="btnStay" が付与されていることを前提とする
-            const btnStay = document.getElementById('btnStay');
-            if (btnStay) {
-                const isFullHP = gameState.cainHP >= gameState.cainMaxHP;
-                btnStay.disabled = (isFullHP || !gameState.canStay);
-            }
+        const nextLoc = uiControl.getLocData(gameState.currentDistance);
+        if (prevLoc !== nextLoc.name) {
+            setTimeout(() => {
+                uiControl.addLog(`―― ${nextLoc.name} ――`, "marker");
+                uiControl.addLog(nextLoc.desc);
+            }, 800);
+        }
+    },
 
-            const btnInnDeliver = document.getElementById('btnInnDeliver');
-            const canDeliver = (gameState.inventory.silverCoin >= 3 && !gameState.flags.isDelivered);
-            if (btnInnDeliver) btnInnDeliver.style.display = canDeliver ? 'flex' : 'none';
+    talk: function() {
+        if (gameState.currentDistance === 0) {
+            uiControl.addLog("（宿屋に入って主人と話そう）");
         } else {
-            // 探索UIの表示
-            if (exploreUI) exploreUI.style.display = 'grid';
-            if (innUI) innUI.style.display = 'none';
-            
-            const btnEnterInn = document.getElementById('btnEnterInn');
-            const btnMoveForward = document.getElementById('btnMoveForward');
-            const btnMoveBack = document.getElementById('btnMoveBack');
-            const btnTalk = document.getElementById('btnTalk');
-
-            if (gameState.currentDistance === 0) {
-                if (btnEnterInn) {
-                    btnEnterInn.style.display = 'flex';
-                    // デザイン統一のためアクセントカラーを外す場合はここで調整（クラス操作）
-                    btnEnterInn.className = "btn btn-full"; 
-                }
-                if (btnMoveForward) btnMoveForward.textContent = "琥珀の森へ";
-                if (btnMoveBack) btnMoveBack.disabled = true;
-            } else {
-                if (btnEnterInn) btnEnterInn.style.display = 'none';
-                if (btnMoveForward) {
-                    btnMoveForward.textContent = "進む";
-                    btnMoveForward.disabled = (gameState.currentDistance >= CONFIG.MAX_DISTANCE);
-                }
-            }
-            if (btnTalk) btnTalk.disabled = !loc.hasTarget;
+            uiControl.addLog("（周囲を警戒している…）");
         }
     },
 
-    getLocData: function(dist) {
-        const keys = Object.keys(LOCATIONS).map(Number).sort((a, b) => b - a);
-        return LOCATIONS[keys.find(k => dist >= k)];
-    },
-
-    openModal: function() {
-        const modal = document.getElementById('itemModal');
-        const list = document.getElementById('itemList');
-        if (!modal || !list) return;
-        list.innerHTML = '';
-        const items = Object.entries(gameState.inventory).filter(([k,v]) => v > 0);
-        if (items.length === 0) {
-            list.innerHTML = '<div style="text-align:center; padding:20px;">所持品なし</div>';
-        } else {
-            items.forEach(([key, count]) => {
-                const div = document.createElement('div');
-                div.className = 'item-row';
-                div.textContent = `${CONFIG.ITEM_NAME[key]} (×${count})`;
-                div.onclick = () => this.selectItem(key, count);
-                list.appendChild(div);
-            });
+    executeHerb: function() {
+        if (gameState.inventory.herb > 0) {
+            gameState.inventory.herb--;
+            gameState.cainHP = gameState.cainMaxHP;
+            uiControl.updateUI();
+            uiControl.closeModal();
+            uiControl.addLog("薬草を使い、HPが全回復した。");
         }
-        modal.style.display = 'flex';
-    },
-
-    selectItem: function(key, count) {
-        const detail = document.getElementById('itemDetailArea');
-        if (!detail) return;
-        let html = `<strong>${CONFIG.ITEM_NAME[key]}</strong> (×${count})<br><span style="font-size:12px;color:#aaa;">${CONFIG.ITEM_DESC[key]}</span>`;
-        if (key === 'herb') {
-            html += `<br><button class="btn" style="height:35px;margin:10px auto 0;width:120px;" onclick="explorationSystem.executeHerb()">使う</button>`;
-        }
-        detail.innerHTML = html;
-    },
-
-    closeModal: function() {
-        const modal = document.getElementById('itemModal');
-        if (modal) modal.style.display = 'none';
     }
 };
-// 🏁ーー【UI表示・更新処理】ここまでーー
-
+// 🏁ーー【移動・探索システム】ここまでーー
 
 
 
