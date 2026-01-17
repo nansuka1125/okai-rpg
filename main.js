@@ -264,7 +264,15 @@ const innSystem = {
     // --- exitInn: 拠点退場 ---
     exitInn: function() {
         gameState.isAtInn = false;
-        uiControl.addLog("―― 宿屋前 (0m) ――", "marker");
+        
+        // 宿屋を出た時は必ず「拠点（ダンジョン外）」の状態にする
+        gameState.isInDungeon = false;
+        gameState.currentDistance = 0;
+        
+        // 宿泊制限のリセット
+        gameState.canStay = true;
+        
+        uiControl.addLog("―― 宿屋前 ――", "marker");
         uiControl.updateUI();
     },
 
@@ -282,7 +290,7 @@ const innSystem = {
             uiControl.addLog("（薬草を1つもらった！）");
         }
 
-        // 会話カウントを進める（最大値で止める）
+        // 会話カウントを進める
         if (gameState.talkCount < talkList.length - 1) {
             gameState.talkCount = (gameState.talkCount || 0) + 1;
         }
@@ -291,20 +299,18 @@ const innSystem = {
 
     // --- stay: 宿泊（全回復） ---
     stay: function() {
-        // HPが満タンの場合
         if (gameState.cainHP >= gameState.cainMaxHP) {
             uiControl.addLog("カイン「今はまだ休む必要はないな。」");
             return;
         }
 
-        // 宿泊済みフラグのチェック
         if (!gameState.canStay) {
             uiControl.addLog("宿屋の主人『悪いが、そう何度も部屋は貸せねえよ。少し外でも歩いてきたらどうだい？』");
             return;
         }
 
         gameState.cainHP = gameState.cainMaxHP;
-        gameState.canStay = false; // 宿泊済み
+        gameState.canStay = false; 
         uiControl.addLog("カインは一晩眠り、疲れが癒えた。（HPが全回復した）");
         uiControl.updateUI();
     },
