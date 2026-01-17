@@ -142,6 +142,8 @@ const explorationSystem = {
         if (gameState.isBattling || gameState.isAtInn) return;
 
         const prevLoc = uiControl.getLocData(gameState.currentDistance).name;
+        
+        // 移動先の計算
         let nextDist = gameState.currentDistance + step;
 
         // 通行制限（フラグチェック）
@@ -153,9 +155,10 @@ const explorationSystem = {
             }
         }
 
+        // 移動範囲の境界チェック
         if (nextDist < CONFIG.MIN_DISTANCE || nextDist > CONFIG.MAX_DISTANCE) return;
 
-        // 1歩でも動いたら宿泊可能にする
+        // 実際に移動（stepが0以外）が発生した場合、宿泊可能フラグをリセット
         if (step !== 0) {
             gameState.canStay = true;
         }
@@ -163,7 +166,7 @@ const explorationSystem = {
         gameState.currentDistance = nextDist;
         uiControl.addLog(`${gameState.currentDistance}m地点へ移動した。`);
 
-        // エンカウント判定（0m地点除外）
+        // エンカウント判定（0m地点は平和なため除外）
         if (gameState.currentDistance > 0 && Math.random() < CONFIG.BATTLE_RATE) {
             battleSystem.startBattle();
             return;
@@ -171,13 +174,14 @@ const explorationSystem = {
 
         uiControl.updateUI();
 
-        // 固定イベント判定
+        // 固定イベント判定（銀貨の取得）
         if (gameState.currentDistance === 3 && !gameState.flags.gotTestCoin) {
             gameState.flags.gotTestCoin = true;
             gameState.inventory.silverCoin += 3;
             uiControl.addLog("道端に銀貨が3枚落ちている！カインはそれを拾い上げた。");
         }
 
+        // ロケーション変更に伴うログ出力
         const nextLoc = uiControl.getLocData(gameState.currentDistance);
         if (prevLoc !== nextLoc.name) {
             setTimeout(() => {
@@ -187,6 +191,7 @@ const explorationSystem = {
         }
     },
 
+    // --- talk: 状況に応じた会話・独白処理 ---
     talk: function() {
         if (gameState.currentDistance === 0) {
             uiControl.addLog("（宿屋に入って主人と話そう）");
@@ -195,6 +200,7 @@ const explorationSystem = {
         }
     },
 
+    // --- executeHerb: 薬草の使用実行 ---
     executeHerb: function() {
         if (gameState.inventory.herb > 0) {
             gameState.inventory.herb--;
@@ -206,7 +212,6 @@ const explorationSystem = {
     }
 };
 // 🏁ーー【移動・探索システム】ここまでーー
-
 
 
 // 🚩ーー【宿屋・拠点システム】ここからーー
