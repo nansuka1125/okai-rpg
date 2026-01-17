@@ -32,3 +32,4 @@ let gameState = {
     flags: { isDelivered: false, gotTestCoin: false },
     currentEnemy: null
 };
+　
