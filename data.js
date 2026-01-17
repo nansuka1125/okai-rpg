@@ -27,7 +27,8 @@ let gameState = {
     cainMaxHP: 100,
     inventory: { silverCoin: 0, herb: 1 },
     flags: { isDelivered: false, gotTestCoin: false },
-    // バトル状態
+    // 状態フラグ
     isBattling: false,
+    isAtInn: false, // 宿屋の中にいるか
     currentEnemy: null
 };
