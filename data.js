@@ -14,22 +14,21 @@ const CONFIG = {
 
 // --- ロケーションデータ ---
 const LOCATIONS = {
-    0: { name: "宿屋前", hasTarget: true, desc: "冒険の拠点だ。" },
-    1: { name: "琥珀の森", hasTarget: false, desc: "木々がざわめいている。" },
-    7: { name: "森の深層", hasTarget: true, desc: "強力な魔物の気配がする。" }
+    0: { name: "宿屋前", hasTarget: true, desc: "出発の準備は整った。" },
+    1: { name: "琥珀の森", hasTarget: false, desc: "鳥の鳴き声が聞こえる…" },
+    7: { name: "森の深層", hasTarget: true, desc: "空気が湿ってきた…" }
 };
 
 // --- 状態管理 ---
 let gameState = {
     currentDistance: 0,
-    isExploring: false, // 0m地点で「森へ」を選んだか
-    isAtInn: false,
-    isBattling: false,
     cainLv: 1,
     cainHP: 100,
     cainMaxHP: 100,
     inventory: { silverCoin: 0, herb: 1 },
     flags: { isDelivered: false, gotTestCoin: false },
+    // 状態フラグ
+    isBattling: false,
+    isAtInn: false, // 宿屋の中にいるか
     currentEnemy: null
 };
-　
