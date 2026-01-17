@@ -220,16 +220,35 @@ const innSystem = {
         uiControl.updateUI();
     },
 
+    // --- talk: 会話進行システム ---
     talk: function() {
-        uiControl.addLog("宿屋の主人『外の様子はどうだい？』");
+        const talkList = TALK_DATA.innOwner;
+        const index = Math.min(gameState.talkCount || 0, talkList.length - 1);
+        const currentTalk = talkList[index];
+
+        uiControl.addLog(currentTalk.text);
+
+        // 特殊効果の判定
+        if (currentTalk.effect === "getHerb") {
+            gameState.inventory.herb += 1;
+            uiControl.addLog("（薬草を1つもらった！）");
+        }
+
+        // 会話カウントを進める（最大値で止める）
+        if (gameState.talkCount < talkList.length - 1) {
+            gameState.talkCount = (gameState.talkCount || 0) + 1;
+        }
+        uiControl.updateUI();
     },
 
+    // --- stay: 宿泊（全回復） ---
     stay: function() {
         gameState.cainHP = gameState.cainMaxHP;
         uiControl.addLog("カインは一晩眠り、疲れが癒えた。（HPが全回復した）");
         uiControl.updateUI();
     },
 
+    // --- deliver: 納品処理 ---
     deliver: function() {
         if (gameState.inventory.silverCoin < 3) return;
         gameState.inventory.silverCoin -= 3;
@@ -249,7 +268,7 @@ const battleSystem = {
         gameState.isBattling = true;
         gameState.currentEnemy = { ...CONFIG.TEST_ENEMY };
         uiControl.addLog(`${gameState.currentEnemy.name}が現れた！`);
-        uiControl.updateUI(); // ここでボタンが disabled になる
+        uiControl.updateUI();
 
         // 1秒後に自動で戦闘開始
         setTimeout(() => this.runBattleLoop(), 1000);
@@ -291,7 +310,7 @@ const battleSystem = {
     endBattle: function() {
         gameState.isBattling = false;
         gameState.currentEnemy = null;
-        uiControl.updateUI(); // ここでボタンの disabled が解除される
+        uiControl.updateUI();
     }
 };
 // 🏁ーー【バトルシステム】ここまでーー
@@ -299,8 +318,6 @@ const battleSystem = {
 
 // 🚩ーー【初期化・その他】ここからーー
 window.onload = () => {
-    // インデックス側の古い関数名（gameAction）との互換性を維持したい場合はここで繋ぎ込みが可能
-    // 今回は index.html の onclick を直接書き換える想定だが、念のため初期化のみ行う
     uiControl.addLog("探索を開始した。");
     uiControl.updateUI();
 };
