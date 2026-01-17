@@ -1,4 +1,4 @@
-// --- 定数・設定管理 ---
+// --- 定数・設定管理 --- 
 const CONFIG = {
     MAX_DISTANCE: 10,
     MIN_DISTANCE: 0,
