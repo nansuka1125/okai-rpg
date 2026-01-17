@@ -64,6 +64,13 @@ const uiControl = {
             // 宿屋UIの表示
             if (exploreUI) exploreUI.style.display = 'none';
             if (innUI) innUI.style.display = 'grid';
+            
+            // HP満タン時は「泊まる」を無効化
+            const btnStay = document.querySelector('button[onclick="innSystem.stay()"]');
+            if (btnStay && gameState.cainHP >= gameState.cainMaxHP) {
+                btnStay.disabled = true;
+            }
+
             const btnInnDeliver = document.getElementById('btnInnDeliver');
             const canDeliver = (gameState.inventory.silverCoin >= 3 && !gameState.flags.isDelivered);
             if (btnInnDeliver) btnInnDeliver.style.display = canDeliver ? 'flex' : 'none';
@@ -79,12 +86,17 @@ const uiControl = {
 
             if (gameState.currentDistance === 0) {
                 if (btnEnterInn) btnEnterInn.style.display = 'flex';
-                if (btnMoveForward) btnMoveForward.textContent = "琥珀の森へ";
+                // 0m地点：森に入る処理を距離0での移動として定義
+                if (btnMoveForward) {
+                    btnMoveForward.textContent = "琥珀の森へ";
+                    btnMoveForward.setAttribute("onclick", "explorationSystem.move(0)");
+                }
                 if (btnMoveBack) btnMoveBack.disabled = true;
             } else {
                 if (btnEnterInn) btnEnterInn.style.display = 'none';
                 if (btnMoveForward) {
                     btnMoveForward.textContent = "進む";
+                    btnMoveForward.setAttribute("onclick", "explorationSystem.move(1)");
                     btnMoveForward.disabled = (gameState.currentDistance >= CONFIG.MAX_DISTANCE);
                 }
             }
@@ -142,8 +154,6 @@ const explorationSystem = {
         if (gameState.isBattling || gameState.isAtInn) return;
 
         const prevLoc = uiControl.getLocData(gameState.currentDistance).name;
-        
-        // 移動先の計算
         let nextDist = gameState.currentDistance + step;
 
         // 通行制限（フラグチェック）
@@ -155,7 +165,6 @@ const explorationSystem = {
             }
         }
 
-        // 移動範囲の境界チェック
         if (nextDist < CONFIG.MIN_DISTANCE || nextDist > CONFIG.MAX_DISTANCE) return;
 
         // 実際に移動（stepが0以外）が発生した場合、宿泊可能フラグをリセット
@@ -164,9 +173,15 @@ const explorationSystem = {
         }
 
         gameState.currentDistance = nextDist;
-        uiControl.addLog(`${gameState.currentDistance}m地点へ移動した。`);
 
-        // エンカウント判定（0m地点は平和なため除外）
+        // ログ出力（0m地点へのエントリー判定）
+        if (gameState.currentDistance === 0) {
+            uiControl.addLog("琥珀の森に入った。");
+        } else {
+            uiControl.addLog(`${gameState.currentDistance}m地点へ移動した。`);
+        }
+
+        // エンカウント判定（0m地点は平和なため、currentDistance > 0 の時のみ判定）
         if (gameState.currentDistance > 0 && Math.random() < CONFIG.BATTLE_RATE) {
             battleSystem.startBattle();
             return;
@@ -174,14 +189,13 @@ const explorationSystem = {
 
         uiControl.updateUI();
 
-        // 固定イベント判定（銀貨の取得）
+        // 固定イベント判定
         if (gameState.currentDistance === 3 && !gameState.flags.gotTestCoin) {
             gameState.flags.gotTestCoin = true;
             gameState.inventory.silverCoin += 3;
             uiControl.addLog("道端に銀貨が3枚落ちている！カインはそれを拾い上げた。");
         }
 
-        // ロケーション変更に伴うログ出力
         const nextLoc = uiControl.getLocData(gameState.currentDistance);
         if (prevLoc !== nextLoc.name) {
             setTimeout(() => {
@@ -212,6 +226,8 @@ const explorationSystem = {
     }
 };
 // 🏁ーー【移動・探索システム】ここまでーー
+
+
 
 
 // 🚩ーー【宿屋・拠点システム】ここからーー
